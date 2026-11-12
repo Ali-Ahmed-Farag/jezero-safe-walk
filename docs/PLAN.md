@@ -275,9 +275,9 @@ findRoute({ slope, width, height, pixelM, start: [row, col], end: [row, col], pr
  
 | الدور | الاسم |
 |---|---|
-| ⁦Data Engineer 1⁩ | .......................... |
-| ⁦Data Engineer 2⁩ | .......................... |
-| ⁦Data Scientist⁩ | .......................... |
+| ⁦Data Engineer 1⁩ |ALI AHMED FARAG |
+| ⁦Data Engineer 2⁩ | SHADD MOUSA |
+| ⁦Data Scientist⁩ | AMR NABIL |
 | ⁦Full Stack⁩ | .......................... |
  
 > أي حد تحت ⁦18⁩ سنة: مينفعش صورته أو اسمه أو صوته يظهروا في أي مادة تتسلم (شرائح، فيديو، موقع).
