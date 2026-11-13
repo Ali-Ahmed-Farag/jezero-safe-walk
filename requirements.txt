@@ -1,0 +1,10 @@
+# Jezero Safe Walk — DE1 environment (Python 3.11, Windows)
+# Scope: Data Engineer 1 toolset per docs/PLAN.md §6 (rasterio or GDAL, NumPy, Pillow).
+# rasterio wheels bundle GDAL on Windows — no separate system GDAL required.
+# Top-level versions pinned to the verified set to be used for all DE1 deliverables
+# (see pipeline/README.md; transitive dependencies are not pinned).
+# Licenses of these libraries are registered in docs/sources.md per PLAN §15 (Task 09).
+
+rasterio==1.4.4
+numpy==2.4.6
+pillow==13.0.0
