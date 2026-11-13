@@ -1,0 +1,17 @@
+{
+  "file": "slope_u8.bin",
+  "dtype": "uint8",
+  "width": 1016,
+  "height": 1075,
+  "pixel_size_m": {
+    "x": 20.0,
+    "y": 20.0
+  },
+  "slope_scale": 4,
+  "unit": "degrees",
+  "max_valid_deg": 63.5,
+  "nodata_or_border_u8": 255,
+  "nodata_or_border_deg": 63.75,
+  "method": "Horn 3x3 finite-difference gradient",
+  "row0": "north"
+}
