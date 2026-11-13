@@ -1,0 +1,24 @@
+:root {
+  --bg: #0B0F1A;
+  --surface: #141A2B;
+  --surface-2: #1B2338;
+  --border: #232C45;
+  --accent: #FF6B3D;
+  --safe: #3FB950;
+  --hard: #E3B341;
+  --forbidden: #F85149;
+  --text: #E6EAF2;
+  --text-dim: #8A93A8;
+
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+}

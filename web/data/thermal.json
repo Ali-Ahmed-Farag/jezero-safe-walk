@@ -1,0 +1,13 @@
+{
+  "source": "NASA M20 First Weather Report",
+  "type": "cited",
+  "curve": [
+    {"hour": 0, "temp": -80},
+    {"hour": 4, "temp": -75},
+    {"hour": 8, "temp": -40},
+    {"hour": 12, "temp": -22},
+    {"hour": 16, "temp": -30},
+    {"hour": 20, "temp": -60},
+    {"hour": 24, "temp": -80}
+  ]
+}

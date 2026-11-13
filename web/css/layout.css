@@ -1,0 +1,115 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+/* Top Bar */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--surface);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.brand-mark {
+  color: var(--accent);
+  font-size: 20px;
+}
+
+.brand-name {
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+}
+
+.badge-warning {
+  font-size: 10px;
+  color: var(--accent);
+  background-color: rgba(255, 107, 61, 0.1);
+  border: 1px solid rgba(255, 107, 61, 0.3);
+  padding: 2px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.topbar-right {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* Main Layout Grid */
+.layout {
+  display: grid;
+  grid-template-columns: 280px 1fr 320px;
+  grid-template-rows: 1fr 220px;
+  grid-template-areas:
+    "left map right"
+    "left bottom right";
+  flex: 1;
+  gap: 1px; /* uses background color as border */
+  background-color: var(--border);
+  overflow: hidden;
+}
+
+/* Panels */
+.panel {
+  background-color: var(--surface);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.panel-left { grid-area: left; }
+.panel-right { grid-area: right; }
+.panel-bottom { grid-area: bottom; }
+
+.map-container {
+  grid-area: map;
+  position: relative;
+  background-color: var(--bg);
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+  background-color: #000; /* Will be covered by tiles/imageOverlay */
+}
+
+.panel-header {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+  background-color: var(--surface-2);
+}
+
+.panel-body {
+  padding: var(--space-4);
+  flex: 1;
+}

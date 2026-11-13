@@ -1,0 +1,138 @@
+/* Buttons */
+.btn {
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-ghost { background-color: transparent; color: var(--text); border-color: var(--border); }
+.btn-ghost:hover { background-color: var(--surface-2); border-color: var(--text-dim); }
+.btn-accent { background-color: var(--accent); color: #fff; }
+.btn-accent:hover { filter: brightness(1.1); }
+
+/* Map Hint */
+.map-hint {
+  position: absolute;
+  bottom: var(--space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(20, 26, 43, 0.9);
+  color: var(--text);
+  padding: var(--space-2) var(--space-4);
+  border-radius: 20px;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  backdrop-filter: blur(4px);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: var(--radius-sm); }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+/* Layer Controls */
+.layer-item { margin-bottom: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }
+.layer-item label { display: flex; align-items: center; gap: var(--space-2); font-size: 12px; color: var(--text); cursor: pointer; }
+.layer-item input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
+.layer-item input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+
+/* Radio Buttons */
+.radio-group { display: flex; flex-direction: column; gap: var(--space-3); }
+.radio-group label { display: flex; align-items: center; gap: var(--space-2); cursor: pointer; font-size: 13px; color: var(--text); }
+.radio-group input[type="radio"] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+
+/* Mission Brief Grid */
+.brief-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
+.brief-item { background-color: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: var(--space-2); display: flex; flex-direction: column; gap: 4px; }
+.brief-item .label { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.brief-item .value { font-size: 14px; font-weight: 600; color: var(--text); }
+.risk-low { color: var(--safe) !important; }
+.risk-medium { color: var(--hard) !important; }
+.risk-high { color: var(--forbidden) !important; }
+
+/* Chart Canvas */
+#elevation-profile {
+  padding: 0; /* شيلنا الحواف عشان الرسمة تاخد المكان كله */
+  position: relative;
+}
+#profile-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  position: absolute; top: 100%; left: 0;
+  background-color: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3); z-index: 1000; min-width: 160px;
+  display: flex; flex-direction: column; margin-top: 4px;
+}
+.dropdown-menu button {
+  background: none; border: none; color: var(--text);
+  padding: var(--space-2) var(--space-4); text-align: left; cursor: pointer;
+  font-size: 12px; border-bottom: 1px solid var(--border);
+}
+.dropdown-menu button:last-child { border-bottom: none; }
+.dropdown-menu button:hover { background-color: var(--surface-2); }
+
+/* Modal */
+.modal-backdrop { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+.modal { background-color: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); width: 90%; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-4); border-bottom: 1px solid var(--border); }
+.modal-header h2 { font-size: 16px; font-weight: 600; color: var(--text); margin: 0; }
+.modal-body { padding: var(--space-4); overflow-y: auto; color: var(--text); font-size: 13px; line-height: 1.6; }
+.modal-body h3 { font-size: 14px; color: var(--accent); margin-top: var(--space-4); margin-bottom: var(--space-2); }
+.modal-body ul { padding-left: var(--space-4); margin-bottom: var(--space-4); }
+.modal-body li { margin-bottom: var(--space-2); color: var(--text-dim); }
+.modal-body strong { color: var(--text); }
+
+/* Validation Modal Specifics */
+.validation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); margin: var(--space-4) 0; }
+.val-card { background-color: var(--surface-2); padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center; }
+.val-card h4 { font-size: 11px; color: var(--text-dim); text-transform: uppercase; margin-bottom: var(--space-2); }
+.val-value { font-size: 24px; font-weight: 700; color: var(--accent); }
+.val-sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+/* Compare Table */
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+.compare-table th, .compare-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.compare-table th {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+.compare-table td {
+  font-size: 14px;
+  color: var(--text-dim);
+}
+.compare-table td:nth-child(2) {
+  color: var(--text);
+  font-weight: bold;
+}
+/* Thermal Chart Container */
+.chart-container {
+  height: 200px;
+  width: 100%;
+  position: relative;
+}
+#thermal-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}

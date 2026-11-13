@@ -1,0 +1,15 @@
+{
+  "width": 1016,
+  "height": 1075,
+  "bounds": {
+    "lon_min": 77.2229,
+    "lon_max": 77.5840,
+    "lat_min": 18.3068,
+    "lat_max": 18.6693
+  },
+  "pixel_size_m": { "x": 20.0, "y": 20.0 },
+  "elev_scale": 10,
+  "slope_scale": 4,
+  "nodata_elev": -32768,
+  "row0": "north"
+}

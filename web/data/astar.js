@@ -197,4 +197,4 @@ function findRoute({
     return { found: false, reason: 'no_path', path: [] };
 }
 
-if (typeof module !== 'undefined') module.exports = { findRoute };
+export { findRoute };

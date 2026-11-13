@@ -1,0 +1,36 @@
+@media (max-width: 1024px) {
+  body {
+    overflow-y: auto;
+    height: auto;
+  }
+  
+  .layout {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .map-container {
+    height: 60vh;
+    min-height: 400px;
+    order: -1; /* Map comes first on mobile */
+  }
+
+  .panel-left, .panel-right, .panel-bottom {
+    height: auto;
+    max-height: 450px;
+    overflow-y: auto;
+  }
+
+  .panel-bottom {
+    height: 250px;
+  }
+  
+  .topbar {
+    flex-direction: column;
+    height: auto;
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+}
