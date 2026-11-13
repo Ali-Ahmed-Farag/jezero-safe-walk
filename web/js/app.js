@@ -17,7 +17,7 @@ const SUIT_PRESETS = {
 };
 
 const map = L.map("map", {
-  zoomControl: true, attributionControl: false, crs: L.CRS.Simple, minZoom: -2, maxZoom: 4
+  zoomControl: true, attributionControl: false, crs: L.CRS.Simple, minZoom: -4, maxZoom: 4
 });
 
 const ui = { hint: document.getElementById("map-hint") };
@@ -34,7 +34,9 @@ async function boot() {
     state.slope = await loadSlope('./data/slope_u8.bin', expectedCells);
 
     const mapBounds = [[0, 0], [state.meta.height, state.meta.width]];
-    map.fitBounds(mapBounds);
+    
+    // التعديل هنا: بنستخدم setView بـ Zoom 1 عشان نضمن إنها مالية الشاشة
+    map.setView([state.meta.height / 2, state.meta.width / 2], 1);
 
     updateSlopeOverlay(mapBounds);
 
@@ -47,7 +49,7 @@ async function boot() {
     setupLayerControls();
     await setupPresets();
     await setupValidation();
-    await setupThermal(); // تحميل الحرارة
+    await setupThermal();
 
     ui.hint.textContent = "Click to set Start";
   } catch (error) {
@@ -57,8 +59,13 @@ async function boot() {
 }
 
 window.addEventListener('resize', () => {
-  if (currentMetrics && currentMetrics.arrays) drawProfile('profile-canvas', currentMetrics.arrays);
-  if (state.thermal) drawThermalChart(state.thermal);
+  setTimeout(() => {
+    map.invalidateSize();
+    if (currentMetrics && currentMetrics.arrays) drawProfile('profile-canvas', currentMetrics.arrays);
+    if (state.thermal && document.getElementById('thermal-modal').style.display === 'flex') {
+      drawThermalChart(state.thermal);
+    }
+  }, 200);
 });
 
 async function setupThermal() {
@@ -68,7 +75,6 @@ async function setupThermal() {
     
     document.getElementById('btn-thermal').addEventListener('click', () => {
       document.getElementById('thermal-modal').style.display = 'flex';
-      // Delay slightly to ensure modal is visible before drawing
       setTimeout(() => drawThermalChart(state.thermal), 50); 
     });
   } catch (err) {
@@ -104,7 +110,7 @@ function drawThermalChart(data) {
   const scaleY = (temp) => padding.top + h - ((temp - minTemp) / (maxTemp - minTemp)) * h;
 
   ctx.beginPath();
-  ctx.strokeStyle = '#FF6B3D'; // Accent color
+  ctx.strokeStyle = '#FF6B3D';
   ctx.lineWidth = 2;
 
   curve.forEach((point, i) => {
@@ -115,7 +121,6 @@ function drawThermalChart(data) {
   });
   ctx.stroke();
 
-  // Add points
   curve.forEach(point => {
     const x = scaleX(point.hour);
     const y = scaleY(point.temp);
@@ -125,7 +130,6 @@ function drawThermalChart(data) {
     ctx.fill();
   });
 
-  // Labels
   ctx.fillStyle = '#8A93A8';
   ctx.font = '10px sans-serif';
   ctx.fillText(`${maxTemp}°C`, 5, padding.top + 5);
@@ -297,13 +301,19 @@ map.on("click", (e) => {
 });
 
 const modals = [
+  document.getElementById('about-modal'),
   document.getElementById('sources-modal'), 
   document.getElementById('validation-modal'), 
   document.getElementById('compare-modal'),
   document.getElementById('thermal-modal')
 ];
 
-document.getElementById('btn-sources').addEventListener('click', () => modals[0].style.display = 'flex');
+document.getElementById('btn-about').addEventListener('click', () => modals[0].style.display = 'flex');
+document.getElementById('btn-sources').addEventListener('click', () => modals[1].style.display = 'flex');
+
+document.getElementById('btn-print').addEventListener('click', () => {
+  window.print();
+});
 
 document.querySelectorAll('.close-modal-btn').forEach(btn => {
   btn.addEventListener('click', () => modals.forEach(m => m.style.display = 'none'));

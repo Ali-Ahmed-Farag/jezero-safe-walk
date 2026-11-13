@@ -59,15 +59,10 @@
 .risk-high { color: var(--forbidden) !important; }
 
 /* Chart Canvas */
-#elevation-profile {
-  padding: 0; /* شيلنا الحواف عشان الرسمة تاخد المكان كله */
-  position: relative;
-}
-#profile-canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
+#elevation-profile { padding: 0; position: relative; }
+#profile-canvas { width: 100%; height: 100%; display: block; }
+.chart-container { height: 200px; width: 100%; position: relative; }
+#thermal-canvas { width: 100%; height: 100%; display: block; }
 
 /* Dropdown Menu */
 .dropdown-menu {
@@ -95,44 +90,26 @@
 .modal-body li { margin-bottom: var(--space-2); color: var(--text-dim); }
 .modal-body strong { color: var(--text); }
 
+/* Compare Table */
+.compare-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.compare-table th, .compare-table td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); }
+.compare-table th { font-size: 12px; text-transform: uppercase; color: var(--text); }
+.compare-table td { font-size: 14px; color: var(--text-dim); }
+.compare-table td:nth-child(2) { color: var(--text); font-weight: bold; }
+
 /* Validation Modal Specifics */
 .validation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); margin: var(--space-4) 0; }
 .val-card { background-color: var(--surface-2); padding: var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--border); text-align: center; }
 .val-card h4 { font-size: 11px; color: var(--text-dim); text-transform: uppercase; margin-bottom: var(--space-2); }
 .val-value { font-size: 24px; font-weight: 700; color: var(--accent); }
 .val-sub { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
-/* Compare Table */
-.compare-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-.compare-table th, .compare-table td {
-  padding: 10px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-}
-.compare-table th {
-  font-size: 12px;
-  text-transform: uppercase;
-  color: var(--text);
-}
-.compare-table td {
-  font-size: 14px;
-  color: var(--text-dim);
-}
-.compare-table td:nth-child(2) {
-  color: var(--text);
-  font-weight: bold;
-}
-/* Thermal Chart Container */
-.chart-container {
-  height: 200px;
-  width: 100%;
-  position: relative;
-}
-#thermal-canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
+
+/* Print Styles */
+@media print {
+  body * { visibility: hidden; }
+  #mission-brief, #mission-brief * { visibility: visible; }
+  #mission-brief { position: absolute; left: 0; top: 0; width: 100%; background: white; color: black; }
+  .brief-item { border: 1px solid #ccc; color: black; }
+  .brief-item .value { color: black; }
+  .btn { display: none; }
 }

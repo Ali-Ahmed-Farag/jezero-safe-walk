@@ -4,7 +4,7 @@ import { pathMetrics } from '../../data/metrics.js';
 let routeLayer = null;
 let startMarker = null;
 let endMarker = null;
-let shortestLayer = null; // للمسار الأقصر
+let shortestLayer = null;
 
 export function clearRoute(map) {
   if (routeLayer) map.removeLayer(routeLayer);
@@ -65,6 +65,7 @@ export function calculateAndDrawRoute(map, state, ui, updateBriefCallback, mode 
     if (mode === "safest") {
       if (routeLayer) map.removeLayer(routeLayer);
       routeLayer = L.polyline(latlngs, { color: '#3FB950', weight: 4 }).addTo(map);
+      // شلنا الـ maxZoom السالب عشان منجبرش الخريطة إنها تصغر
       map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
       ui.hint.textContent = "Safest route found!";
     } else if (mode === "shortest") {

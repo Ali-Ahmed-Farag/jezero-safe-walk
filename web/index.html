@@ -24,6 +24,7 @@
       <span class="badge-warning">Preliminary planning — not for navigation</span>
     </div>
     <div class="topbar-right">
+      <button class="btn btn-ghost" id="btn-about">About</button>
       <div style="position: relative;">
         <button class="btn btn-ghost" id="btn-presets">Scenarios ▼</button>
         <div id="presets-dropdown" class="dropdown-menu" style="display: none;"></div>
@@ -70,7 +71,10 @@
     </div>
 
     <aside class="panel panel-right">
-      <div class="panel-header">Mission Brief</div>
+      <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+        Mission Brief
+        <button class="btn btn-ghost" id="btn-print" style="padding: 2px 6px; font-size: 10px;">Print</button>
+      </div>
       <div class="panel-body" id="mission-brief">
         <div class="brief-grid">
           <div class="brief-item"><span class="label">Distance</span><span class="value" id="mb-dist">-</span></div>
@@ -91,6 +95,31 @@
     </div>
 
   </main>
+
+  <!-- About Modal -->
+  <div class="modal-backdrop" id="about-modal" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>About Jezero Safe Walk</h2>
+        <button class="btn btn-ghost close-modal-btn">✕</button>
+      </div>
+      <div class="modal-body">
+        <h3>NASA Space Apps Cairo 2026</h3>
+        <p><strong>Challenge:</strong> Interplanetary Survival Guide: Martian Map</p>
+        <p><strong>Team:</strong> FALCONS EGYPT</p>
+        <p style="margin-top: 16px;">
+          This tool is a <strong>Mission Planner</strong> for the first human astronauts on Mars. It helps plan safe Extravehicular Activities (EVAs) in Jezero Crater by comparing the "Safest" route against the "Shortest" route based on the astronaut's suit profile.
+        </p>
+        <p style="margin-top: 16px;">
+          <em>Inspiration:</em> We were inspired by NASA's proposed path for the Curiosity rover up Mount Sharp, which features labeled science targets and route analysis. We applied this concept to human exploration.
+        </p>
+        <h3 style="margin-top: 24px;">Built With</h3>
+        <p style="font-size: 12px; color: var(--text-dim);">
+          HTML, CSS, JavaScript, Leaflet, Chart.js logic, A* Routing Algorithm. Data from NASA USGS, Mars Trek, and PDS.
+        </p>
+      </div>
+    </div>
+  </div>
 
   <!-- Sources Modal -->
   <div class="modal-backdrop" id="sources-modal" style="display: none;">
