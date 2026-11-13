@@ -13,3 +13,14 @@ Every data source we use must be listed here with its URL, size, download date, 
 Longitude: 77.2229331 to 77.583964
 
 Latitude: 18.3067994 to 18.669315
+
+## Software Libraries & Analysis Tools (Data Science)
+
+| Tool / Library | Version / Role | License | Used for |
+| --- | --- | --- | --- |
+| Python (NumPy, Rasterio) | Scientific computing & GeoTIFF raster processing | BSD-3-Clause (NumPy, Rasterio) | Horn 3×3 slope computation, coordinate projection, and rover telemetry validation |
+| Node.js | JavaScript runtime | MIT License | Automated benchmarking and validation of `web/data/astar.js` |
+
+## AI Assistance Disclosure
+- **Tool Used:** Google Gemini (AI assistant)
+- **Scope of Use:** Used by the Data Science role to assist with structuring Python validation scripts (`compute_slope.py`, `project_targets.py`, `validate_rover.py`), reviewing sign conventions in directional gradient projection, and drafting technical documentation (`docs/assumptions.md`). All generated code was executed, verified against real NASA PDS/JPL datasets, and validated by the team.
