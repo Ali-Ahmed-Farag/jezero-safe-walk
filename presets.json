@@ -1,0 +1,34 @@
+[
+  {
+    "id": "scenario_1",
+    "title": "Short (approx. 1 km)",
+    "description": "Short exploratory route near the landing site.",
+    "start": [18.4446, 77.4509],
+    "end": [18.4520, 77.4430],
+    "actual_rover_distance_km": 1.2
+  },
+  {
+    "id": "scenario_3",
+    "title": "Medium (approx. 3 km)",
+    "description": "Traverse route towards the Seitah bedrock formations.",
+    "start": [18.4446, 77.4509],
+    "end": [18.4700, 77.4250],
+    "actual_rover_distance_km": 3.1
+  },
+  {
+    "id": "scenario_5",
+    "title": "Advanced (approx. 5 km)",
+    "description": "Detailed route approaching the base of the river delta.",
+    "start": [18.4446, 77.4509],
+    "end": [18.4900, 77.4000],
+    "actual_rover_distance_km": 5.4
+  },
+  {
+    "id": "scenario_8",
+    "title": "Long / Scientific (approx. 8 km)",
+    "description": "Extended mission route deep into the Jezero delta formation.",
+    "start": [18.4446, 77.4509],
+    "end": [18.5200, 77.3800],
+    "actual_rover_distance_km": 8.2
+  }
+]
