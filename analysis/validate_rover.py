@@ -83,7 +83,7 @@ def calc_pct_within_100m(planned_path, seg_rc):
 
 def main():
     dem_path = os.path.join("data", "processed", "dem_20m_crop.tif")
-    track_path = "rover_track_clean.csv"
+    track_path = "data/processed/rover_track_clean.csv"
     out_path = os.path.join("web", "data", "validation_results.json")
 
     with rasterio.open(dem_path) as src:
