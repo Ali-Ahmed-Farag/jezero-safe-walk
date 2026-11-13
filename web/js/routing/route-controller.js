@@ -1,5 +1,7 @@
-import { findRoute } from '../../data/astar.js?v=2';
-import { pathMetrics } from '../../data/metrics.js';
+// web/js/routing/route-controller.js
+import { findRoute } from '../../data/astar.js?v=5';
+import { pathMetrics } from '../../data/metrics.js?v=5';
+import { leafletToRowCol, rowColToLeaflet } from '../grid-utils.js';
 
 let routeLayer = null;
 let startMarker = null;
@@ -11,30 +13,34 @@ export function clearRoute(map) {
   if (shortestLayer) map.removeLayer(shortestLayer);
   if (startMarker) map.removeLayer(startMarker);
   if (endMarker) map.removeLayer(endMarker);
-  routeLayer = null;
-  shortestLayer = null;
-  startMarker = null;
-  endMarker = null;
+  routeLayer = null; shortestLayer = null; startMarker = null; endMarker = null;
 }
 
 export function handleMapClick(map, e, state, ui, updateBriefCallback) {
-  const row = Math.round(e.latlng.lat);
-  const col = Math.round(e.latlng.lng);
+  const { row, col } = leafletToRowCol(e.latlng);
+  
+  if (row < 0 || row >= state.meta.height || col < 0 || col >= state.meta.width) {
+    ui.hint.textContent = "Point is outside the grid.";
+    return;
+  }
 
-  if (row < 0 || row >= state.meta.height || col < 0 || col >= state.meta.width) return;
+  const idx = row * state.meta.width + col;
+  if (state.slope[idx] === 255 || state.elev[idx] === -32768) {
+    ui.hint.textContent = "Point is in NoData / unmapped area.";
+    return;
+  }
 
   if (!state.start) {
     state.start = [row, col];
-    startMarker = L.circleMarker([row, col], { radius: 7, color: '#fff', fillColor: '#3FB950', fillOpacity: 1, weight: 2 }).addTo(map);
+    startMarker = L.circleMarker(rowColToLeaflet(row, col), { radius: 7, color: '#fff', fillColor: '#3FB950', fillOpacity: 1, weight: 2 }).addTo(map);
     ui.hint.textContent = "Click to set Target";
   } else if (!state.end) {
     state.end = [row, col];
-    endMarker = L.circleMarker([row, col], { radius: 7, color: '#fff', fillColor: '#F85149', fillOpacity: 1, weight: 2 }).addTo(map);
+    endMarker = L.circleMarker(rowColToLeaflet(row, col), { radius: 7, color: '#fff', fillColor: '#F85149', fillOpacity: 1, weight: 2 }).addTo(map);
     calculateAndDrawRoute(map, state, ui, updateBriefCallback, "safest");
   } else {
     clearRoute(map);
-    state.start = null;
-    state.end = null;
+    state.start = null; state.end = null;
     ui.hint.textContent = "Click to set Start";
     if (updateBriefCallback) updateBriefCallback(null, null);
   }
@@ -44,28 +50,21 @@ export function calculateAndDrawRoute(map, state, ui, updateBriefCallback, mode 
   ui.hint.textContent = "Calculating route...";
   try {
     const result = findRoute({
-      slope: state.slope,
-      width: state.meta.width,
-      height: state.meta.height,
-      pixelM: state.meta.pixel_size_m.x,
-      start: state.start,
-      end: state.end,
-      profile: state.profile,
-      mode: mode
+      slope: state.slope, width: state.meta.width, height: state.meta.height,
+      pixelM: state.meta.pixel_size_m.x, start: state.start, end: state.end,
+      profile: state.profile, mode: mode
     });
 
     if (!result || !result.found || !result.path || result.path.length === 0) {
-      console.warn("Routing failed. Reason:", result ? result.reason : "Unknown");
       if (mode === "safest") ui.hint.textContent = "No safe route found!";
       return null;
     }
 
-    const latlngs = result.path.map(pt => [pt[0], pt[1]]);
+    const latlngs = result.path.map(pt => rowColToLeaflet(pt[0], pt[1]));
     
     if (mode === "safest") {
       if (routeLayer) map.removeLayer(routeLayer);
       routeLayer = L.polyline(latlngs, { color: '#3FB950', weight: 4 }).addTo(map);
-      // شلنا الـ maxZoom السالب عشان منجبرش الخريطة إنها تصغر
       map.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
       ui.hint.textContent = "Safest route found!";
     } else if (mode === "shortest") {
