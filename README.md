@@ -1,33 +1,36 @@
-# Jezero Safe Walk
+# ◈ Jezero Safe Walk — Mission Planner
 
-NASA Space Apps Challenge 2026 — challenge "Interplanetary Survival Guide: Martian Map"
+**NASA Space Apps Cairo 2026** | **Challenge:** Interplanetary Survival Guide: Martian Map
 
-Jezero Safe Walk is a layered web map of Jezero Crater with a safe-route planner for a Mars EVA, a suggested time-of-day window, and validation of our slope computation against Perseverance's real traverse.
+Jezero Safe Walk is a web-based Extravehicular Activity (EVA) mission planning tool designed for the first human astronauts on Mars. Unlike static map layers, this tool acts as a dynamic **Mission Planner** that calculates and compares the **Safest** and **Shortest** routes across Jezero Crater based on the astronaut's suit profile.
 
-## Team
+## 🚀 Key Features
 
-| Name | Role |
-| --- | --- |
-|  | Data Engineer 1 |
-|  | Data Engineer 2 |
-|  | Data Scientist |
-|  | Full Stack |
+* **Safest vs. Shortest Route Comparison:** Visualizes both routes simultaneously to show the trade-off between distance and terrain safety.
+* **Suit Profiles:** Adjustable threshold sliders (Conservative, Standard, Extended) that instantly recalculate the route based on the astronaut's capabilities.
+* **Mission Brief:** Calculates distance, estimated walking time, total ascent/descent, max slope, and overall risk level for the selected path.
+* **Scientific Validation:** Proves its accuracy by correlating the computed DEM slope with actual Perseverance rover telemetry over 32,003 points (Pitch correlation: 0.886).
+* **Interactive Map:** Features a 20m/pixel DEM, colored slope overlays, the actual Perseverance rover track, and labeled science targets.
+* **Thermal Window:** Displays a daily temperature curve to help plan the best time for an EVA (Source: NASA M20 First Weather Report).
+* **Data Provenance & Limitations:** Built-in modals that clearly document data sources, assumptions, and the limitations of using a 20m DEM for human navigation.
 
-## Repo structure
+## 🛠️ Tech Stack
 
-- `data/raw/` — original source data, kept local and never committed.
-- `data/processed/` — derived layers and intermediate data products.
-- `pipeline/` — processing code for terrain, slope, and route inputs.
-- `analysis/` — notebooks and validation against Perseverance's traverse.
-- `web/` — the layered web map and safe-route planner.
-- `docs/` — project documentation and the data source register.
+* **Frontend:** HTML5, CSS3, Vanilla JavaScript (ES Modules)
+* **Mapping:** Leaflet.js (using `L.CRS.Simple` for image overlays)
+* **Routing:** Custom A* (A-Star) algorithm running entirely in the browser (delivered by Data Scientist).
+* **Charts:** Custom HTML5 Canvas API (for elevation, slope, and thermal profiles).
 
-## Data
+## 📊 Data Sources
 
-Raw data is not committed. See docs/sources.md for links.
+* **Terrain Elevation:** USGS / NASA (M20 Jezero Crater CTXDEM 20m)
+* **Rover Telemetry & Path:** NASA PDS (Perseverance PLACES dataset)
+* **Science Targets:** NASA Mars Trek
+* **Slope Calculation:** Horn 3x3 finite-difference method.
 
-## License
+## 💻 How to Run Locally
 
-Apache 2.0 (see LICENSE).
-
-Work in progress. Project is built during the hackathon, Nov 14-15, 2026.
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Ali-Ahmed-Farag/jezero-safe-walk.git
+   cd jezero-safe-walk
