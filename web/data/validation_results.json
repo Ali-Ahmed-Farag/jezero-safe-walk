@@ -3,7 +3,7 @@
     "total_points_validated": 32003,
     "dem_resolution_m": 20.0,
     "rover_wheelbase_m": 3.0,
-    "sign_convention_note": "RVR frame: +pitch aligns with +arctan(grad_along); +roll aligns with -arctan(grad_cross) (starboard down)",
+    "sign_convention_note": "RVR frame: +pitch aligns with +arctan(grad_along) [Sensitivity: r_pos=0.8858, r_neg=-0.8858]; +roll aligns with -arctan(grad_cross) [Sensitivity: r_pos=-0.8612, r_neg=0.8612]",
     "scientific_interpretation": "Orbital DEM (20 m/pixel) smooths sub-pixel rocks, ripples, and wheel-scale (~3 m) terrain undulations captured by Perseverance IMU pitch/roll telemetry. Additionally, Perseverance actively steers around local hazards, keeping 99%+ of its actual traverse below 16 deg."
   },
   "metrics": {
@@ -55,31 +55,40 @@
       "mean_rover_tilt_deg": 3.914
     },
     {
-      "bin": "5-10 deg",
-      "count": 7155,
-      "pct_points": 22.36,
-      "mean_dem_slope_deg": 7.271,
-      "mean_abs_pitch_deg": 4.829,
-      "mean_abs_roll_deg": 4.406,
-      "mean_rover_tilt_deg": 7.387
+      "bin": "5-8 deg",
+      "count": 4503,
+      "pct_points": 14.07,
+      "mean_dem_slope_deg": 6.232,
+      "mean_abs_pitch_deg": 4.185,
+      "mean_abs_roll_deg": 4.012,
+      "mean_rover_tilt_deg": 6.497
     },
     {
-      "bin": "10-15 deg",
-      "count": 5990,
-      "pct_points": 18.72,
-      "mean_dem_slope_deg": 12.436,
-      "mean_abs_pitch_deg": 7.879,
-      "mean_abs_roll_deg": 6.824,
-      "mean_rover_tilt_deg": 11.68
+      "bin": "8-12 deg",
+      "count": 5200,
+      "pct_points": 16.25,
+      "mean_dem_slope_deg": 10.017,
+      "mean_abs_pitch_deg": 6.169,
+      "mean_abs_roll_deg": 5.986,
+      "mean_rover_tilt_deg": 9.775
     },
     {
-      "bin": ">15 deg",
-      "count": 2250,
-      "pct_points": 7.03,
-      "mean_dem_slope_deg": 16.659,
-      "mean_abs_pitch_deg": 9.868,
-      "mean_abs_roll_deg": 9.088,
-      "mean_rover_tilt_deg": 15.064
+      "bin": "12-16 deg",
+      "count": 4514,
+      "pct_points": 14.1,
+      "mean_dem_slope_deg": 13.934,
+      "mean_abs_pitch_deg": 8.888,
+      "mean_abs_roll_deg": 7.423,
+      "mean_rover_tilt_deg": 12.894
+    },
+    {
+      "bin": ">16 deg",
+      "count": 1178,
+      "pct_points": 3.68,
+      "mean_dem_slope_deg": 17.781,
+      "mean_abs_pitch_deg": 10.958,
+      "mean_abs_roll_deg": 8.612,
+      "mean_rover_tilt_deg": 15.64
     }
   ],
   "rover_replay": {
@@ -96,14 +105,27 @@
       477
     ],
     "actual_rover_distance_m": 4000.6,
-    "planned_astar_distance_m": 1514.8,
-    "astar_runtime_ms": 6.12,
     "actual_mean_dem_slope_deg": 4.849,
     "actual_max_dem_slope_deg": 14.402,
     "actual_mean_telemetry_tilt_deg": 5.145,
-    "planned_mean_dem_slope_deg": 4.958,
-    "planned_max_dem_slope_deg": 9.861,
-    "pct_planned_within_100m_of_rover": 73.77
+    "safest_astar": {
+      "distance_m": 1514.8,
+      "mean_dem_slope_deg": 4.958,
+      "max_dem_slope_deg": 9.861,
+      "pct_within_100m": 73.77
+    },
+    "baseline_shortest": {
+      "distance_m": 1421.08,
+      "mean_dem_slope_deg": 8.093,
+      "max_dem_slope_deg": 16.134,
+      "pct_within_100m": 81.13
+    },
+    "baseline_straight_line": {
+      "distance_m": 1388.52,
+      "mean_dem_slope_deg": 8.201,
+      "max_dem_slope_deg": 17.601,
+      "pct_within_100m": 84.91
+    }
   },
   "samples": [
     {

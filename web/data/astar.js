@@ -1,195 +1,200 @@
-// Jezero Safe Walk - A* Pathfinding Module (Browser & Node compatible)
-// Uses Binary Min-Heap and Typed Arrays for <1s execution on ~1M pixels
-
+// ===== MinHeap: Typed-array backed, reusable =====
 class MinHeap {
-  constructor(capacity) {
-    this.nodes = new Int32Array(capacity);
-    this.scores = new Float64Array(capacity);
-    this.size = 0;
-  }
-
-  push(node, score) {
-    let i = this.size++;
-    while (i > 0) {
-      const parent = (i - 1) >> 1;
-      if (this.scores[parent] <= score) break;
-      this.nodes[i] = this.nodes[parent];
-      this.scores[i] = this.scores[parent];
-      i = parent;
+    constructor(capacity) {
+        this.vals  = new Int32Array(capacity);
+        this.prios = new Float64Array(capacity);
+        this.ties  = new Float64Array(capacity); // secondary key (h)
+        this.size  = 0;
     }
-    this.nodes[i] = node;
-    this.scores[i] = score;
-  }
+    reset() { this.size = 0; }
+    isEmpty() { return this.size === 0; }
 
-  pop() {
-    if (this.size === 0) return -1;
-    const topNode = this.nodes[0];
-    this.size--;
-    if (this.size > 0) {
-      const lastNode = this.nodes[this.size];
-      const lastScore = this.scores[this.size];
-      let i = 0;
-      const half = this.size >> 1;
-      while (i < half) {
-        let child = (i << 1) + 1;
-        const right = child + 1;
-        if (right < this.size && this.scores[right] < this.scores[child]) {
-          child = right;
+    push(val, priority, tie) {
+        if (this.size >= this.vals.length) this._grow();
+        const i = this.size++;
+        this.vals[i]  = val;
+        this.prios[i] = priority;
+        this.ties[i]  = tie;
+        this._up(i);
+    }
+    pop() {
+        if (this.size === 0) return -1;
+        const top = this.vals[0];
+        this.size--;
+        if (this.size > 0) {
+            this.vals[0]  = this.vals[this.size];
+            this.prios[0] = this.prios[this.size];
+            this.ties[0]  = this.ties[this.size];
+            this._down(0);
         }
-        if (lastScore <= this.scores[child]) break;
-        this.nodes[i] = this.nodes[child];
-        this.scores[i] = this.scores[child];
-        i = child;
-      }
-      this.nodes[i] = lastNode;
-      this.scores[i] = lastScore;
+        return top;
     }
-    return topNode;
-  }
+    _grow() {
+        const n = this.vals.length * 2;
+        const nv = new Int32Array(n);   nv.set(this.vals);   this.vals  = nv;
+        const np = new Float64Array(n); np.set(this.prios);  this.prios = np;
+        const nt = new Float64Array(n); nt.set(this.ties);   this.ties  = nt;
+    }
+    _lt(a, b) {
+        const pa = this.prios[a], pb = this.prios[b];
+        if (pa < pb) return true;
+        if (pa > pb) return false;
+        return this.ties[a] < this.ties[b];
+    }
+    _swap(a, b) {
+        let t;
+        t = this.vals[a];  this.vals[a]  = this.vals[b];  this.vals[b]  = t;
+        t = this.prios[a]; this.prios[a] = this.prios[b]; this.prios[b] = t;
+        t = this.ties[a];  this.ties[a]  = this.ties[b];  this.ties[b]  = t;
+    }
+    _up(i) {
+        while (i > 0) {
+            const p = (i - 1) >> 1;
+            if (!this._lt(i, p)) break;
+            this._swap(i, p);
+            i = p;
+        }
+    }
+    _down(i) {
+        const n = this.size;
+        while (true) {
+            const l = 2 * i + 1, r = 2 * i + 2;
+            let m = i;
+            if (l < n && this._lt(l, m)) m = l;
+            if (r < n && this._lt(r, m)) m = r;
+            if (m === i) break;
+            this._swap(i, m);
+            i = m;
+        }
+    }
 }
 
-/**
- * Find safest or shortest route on terrain slope grid.
- * @param {Object} params
- * @param {Uint8Array} params.slope - Row-major array of slope * slopeScale
- * @param {number} params.width - Grid width in pixels
- * @param {number} params.height - Grid height in pixels
- * @param {number|{x:number, y:number}} params.pixelM - Pixel size in meters
- * @param {[number, number]} params.start - [row, col]
- * @param {[number, number]} params.end - [row, col]
- * @param {{safe: number, hard?: number, forbidden: number}} [params.profile] - Thresholds in degrees
- * @param {"safest"|"shortest"} [params.mode] - Routing mode
- * @param {number} [params.slopeScale=4] - Scale factor in slope_u8.bin
- * @returns {{path: Array<[number, number]>, found: boolean}}
- */
+// ===== Module-level reusable buffers (avoid per-call allocs) =====
+let _gScore   = null;
+let _cameFrom = null;
+let _closed   = null;
+let _buffersSize = 0;
+let _heap     = null;
+
+function _ensureBuffers(n) {
+    if (_buffersSize !== n) {
+        _gScore   = new Float32Array(n);
+        _cameFrom = new Int32Array(n);
+        _closed   = new Uint8Array(n);
+        _buffersSize = n;
+    }
+}
+
+function _ensureHeap() {
+    if (!_heap) _heap = new MinHeap(65536);
+    else _heap.reset();
+    return _heap;
+}
+
+// ===== Main interface (unchanged signature + optional limits) =====
 function findRoute({
-  slope,
-  width,
-  height,
-  pixelM,
-  start,
-  end,
-  profile = { safe: 10, hard: 16, forbidden: 16 },
-  mode = "safest",
-  slopeScale = 4,
+    slope, width, height, pixelM, start, end, profile, mode,
+    slopeScale = 4,          // default kept for backward compat
+    maxExpansions = 2000000, // cap on expanded nodes → reason:'search_limit'
 }) {
-  const [startR, startC] = start;
-  const [endR, endC] = end;
+    const [sr, sc] = start;
+    const [er, ec] = end;
+    const N = width * height;
 
-  if (
-    startR < 0 || startR >= height || startC < 0 || startC >= width ||
-    endR < 0 || endR >= height || endC < 0 || endC >= width
-  ) {
-    return { path: [], found: false };
-  }
+    const startSlope = slope[sr * width + sc] / slopeScale;
+    const endSlope   = slope[er * width + ec] / slopeScale;
 
-  const pxX = typeof pixelM === "number" ? pixelM : pixelM.x;
-  const pxY = typeof pixelM === "number" ? pixelM : pixelM.y;
-  const pxDiag = Math.hypot(pxX, pxY);
-
-  const total = width * height;
-  const startIdx = startR * width + startC;
-  const endIdx = endR * width + endC;
-
-  const invScale = 1.0 / slopeScale;
-  const safeDeg = profile.safe;
-  const forbiddenDeg = profile.forbidden;
-
-  // Check if start or end itself exceeds forbidden slope
-  if (slope[startIdx] * invScale > forbiddenDeg || slope[endIdx] * invScale > forbiddenDeg) {
-    return { path: [], found: false };
-  }
-
-  if (startIdx === endIdx) {
-    return { path: [[startR, startC]], found: true };
-  }
-
-  const gScore = new Float64Array(total);
-  gScore.fill(Infinity);
-  const cameFrom = new Int32Array(total);
-  cameFrom.fill(-1);
-  const closed = new Uint8Array(total);
-
-  const openHeap = new MinHeap(total);
-
-  const hStart = Math.hypot((endC - startC) * pxX, (endR - startR) * pxY);
-  gScore[startIdx] = 0;
-  openHeap.push(startIdx, hStart);
-
-  // 8-connected neighbors: [dRow, dCol, stepMeters]
-  const dirs = [
-    [-1,  0, pxY],
-    [ 1,  0, pxY],
-    [ 0, -1, pxX],
-    [ 0,  1, pxX],
-    [-1, -1, pxDiag],
-    [-1,  1, pxDiag],
-    [ 1, -1, pxDiag],
-    [ 1,  1, pxDiag],
-  ];
-
-  const isSafest = mode !== "shortest";
-
-  while (openHeap.size > 0) {
-    const currIdx = openHeap.pop();
-    if (currIdx === endIdx) {
-      const path = [];
-      let trace = endIdx;
-      while (trace !== -1) {
-        const r = Math.floor(trace / width);
-        const c = trace % width;
-        path.push([r, c]);
-        trace = cameFrom[trace];
-      }
-      path.reverse();
-      return { path, found: true };
+    // same forbidden check as before
+    if (startSlope > profile.forbidden) {
+        return { found: false, reason: 'start_forbidden', slope: startSlope, path: [] };
+    }
+    if (endSlope > profile.forbidden) {
+        return { found: false, reason: 'end_forbidden', slope: endSlope, path: [] };
     }
 
-    if (closed[currIdx]) continue;
-    closed[currIdx] = 1;
+    _ensureBuffers(N);
+    const gScore   = _gScore;
+    const cameFrom = _cameFrom;
+    const closed   = _closed;
 
-    const currR = Math.floor(currIdx / width);
-    const currC = currIdx % width;
-    const currSlopeDeg = slope[currIdx] * invScale;
-    const currG = gScore[currIdx];
+    gScore.fill(Infinity);
+    cameFrom.fill(-1);
+    closed.fill(0);
 
-    for (let i = 0; i < 8; i++) {
-      const nR = currR + dirs[i][0];
-      const nC = currC + dirs[i][1];
-      if (nR < 0 || nR >= height || nC < 0 || nC >= width) continue;
+    const openSet = _ensureHeap();
 
-      const nIdx = nR * width + nC;
-      if (closed[nIdx]) continue;
+    const startIdx = sr * width + sc;
+    const endIdx   = er * width + ec;
 
-      const nSlopeDeg = slope[nIdx] * invScale;
-      if (nSlopeDeg > forbiddenDeg) continue;
+    gScore[startIdx] = 0;
+    openSet.push(startIdx, 0, 0);
 
-      const avgSlope = 0.5 * (currSlopeDeg + nSlopeDeg);
-      if (avgSlope > forbiddenDeg) continue;
+    const dirs = [
+        [-1, 0, 1], [1, 0, 1], [0, -1, 1], [0, 1, 1],
+        [-1, -1, 1.4142], [-1, 1, 1.4142], [1, -1, 1.4142], [1, 1, 1.4142]
+    ];
 
-      const d = dirs[i][2];
-      let stepCost = d;
-      if (isSafest) {
-        const ratio = avgSlope / safeDeg;
-        stepCost = d * (1.0 + ratio * ratio);
-      }
+    let expansions = 0;
 
-      const tentativeG = currG + stepCost;
-      if (tentativeG < gScore[nIdx]) {
-        cameFrom[nIdx] = currIdx;
-        gScore[nIdx] = tentativeG;
-        const h = Math.hypot((endC - nC) * pxX, (endR - nR) * pxY);
-        openHeap.push(nIdx, tentativeG + h);
-      }
+    while (!openSet.isEmpty()) {
+        const currentIdx = openSet.pop();
+
+        // closed set: skip if already expanded
+        if (closed[currentIdx]) continue;
+        closed[currentIdx] = 1;
+
+        if (currentIdx === endIdx) {
+            const path = [];
+            let curr = currentIdx;
+            while (curr !== -1) {
+                path.push([Math.floor(curr / width), curr % width]);
+                curr = cameFrom[curr];
+            }
+            return { found: true, path: path.reverse() };
+        }
+
+        expansions++;
+        if (expansions > maxExpansions) {
+            return { found: false, reason: 'search_limit', path: [] };
+        }
+
+        const r = Math.floor(currentIdx / width);
+        const c = currentIdx % width;
+        const currentSlope = slope[currentIdx] / slopeScale;
+
+        for (let i = 0; i < dirs.length; i++) {
+            const nr = r + dirs[i][0];
+            const nc = c + dirs[i][1];
+            if (nr < 0 || nr >= height || nc < 0 || nc >= width) continue;
+
+            const nIdx = nr * width + nc;
+            if (closed[nIdx]) continue; // don't revisit closed nodes
+
+            const neighborSlope = slope[nIdx] / slopeScale;
+            const s_avg = (currentSlope + neighborSlope) / 2.0;
+
+            if (s_avg > profile.forbidden) continue;
+
+            const dist = dirs[i][2] * pixelM;
+
+            // same cost equation as before
+            const cost = mode === 'shortest'
+                ? dist
+                : dist * (1 + Math.pow(s_avg / profile.safe, 2));
+
+            const tentativeG = gScore[currentIdx] + cost;
+
+            if (tentativeG < gScore[nIdx]) {
+                cameFrom[nIdx] = currentIdx;
+                gScore[nIdx]   = tentativeG;
+                const h = Math.hypot((nr - er) * pixelM, (nc - ec) * pixelM);
+                // push with tie-breaker = h, so ties go to closer-to-goal nodes first
+                openSet.push(nIdx, tentativeG + h, h);
+            }
+        }
     }
-  }
 
-  return { path: [], found: false };
+    return { found: false, reason: 'no_path', path: [] };
 }
 
-if (typeof module !== "undefined" && module.exports) {
-  module.exports = { findRoute };
-}
-if (typeof window !== "undefined") {
-  window.findRoute = findRoute;
-}
+if (typeof module !== 'undefined') module.exports = { findRoute };

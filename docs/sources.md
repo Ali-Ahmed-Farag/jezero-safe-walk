@@ -1,26 +1,18 @@
-# Data Sources
+# Sources & Libraries
 
-Every data source we use must be listed here with its URL, size, download date, and license/terms. Cite every source, including open ones.
+## البيانات (Data)
+- **M20_JezeroCrater_CTXDEM_20m.tif:** USGS (NASA), تاريخ التحميل: 2026-11-13, رخصة: Public Domain.
+- **best_interp.csv / rover_track_clean.csv:** NASA PDS (PLACES), تاريخ التحميل: 2026-11-13, رخصة: Public Domain.
+- **CTX/HiRISE (basemap):** NASA Mars Trek, تاريخ التحميل: 2026-11-13, رخصة: Public Domain.
 
-| Name | What it is | URL | Size | Downloaded on | License/terms | Used by |
-| --- | --- | --- | --- | --- | --- | --- |
-| Jezero CTX DEM 20 m | M20_JezeroCrater_CTXDEM_20m.tif | https://planetarymaps.usgs.gov/mosaic/mars2020_trn/CTX/ScienceInvestigationMaps_JPL/M20_JezeroCrater_CTXDEM_20m.tif | 87 MB | TBD | TBD | Terrain and slope analysis |
-| Jezero HiRISE DEM 1 m | JEZ_hirise_soc_006_DTM_MOLAtopography_DeltaGeoid_1m_Eqc_latTs0_lon0_blend40 (TIF) | NASA Mars Trek: https://trek.nasa.gov/mars/ | size unknown | TBD | TBD | High-resolution terrain validation |
-| Perseverance localized traverse | best_interp.csv (PDS Rover PLACES bundle, via Analyst's Notebook > Resources > Rover traverse and coordinate systems) | https://an.rsl.wustl.edu/m20/ | 8.28 MB | TBD | TBD | Validation against the real traverse |
+## المكتبات (Libraries)
+- **NumPy:** v2.0.2 (BSD-3-Clause)
+- **SciPy:** v1.14.1 (BSD-3-Clause)
+- **rasterio:** v1.4.4 (BSD-3-Clause)
+- **matplotlib:** v3.10.1 (PSF/BSD)
+- **pandas:** v2.2.3 (BSD-3-Clause)
+- **Leaflet:** v1.9.x (BSD-2-Clause)
+- **Chart.js:** v4.x (MIT)
 
-## Area of interest
-
-Longitude: 77.2229331 to 77.583964
-
-Latitude: 18.3067994 to 18.669315
-
-## Software Libraries & Analysis Tools (Data Science)
-
-| Tool / Library | Version / Role | License | Used for |
-| --- | --- | --- | --- |
-| Python (NumPy, Rasterio) | Scientific computing & GeoTIFF raster processing | BSD-3-Clause (NumPy, Rasterio) | Horn 3×3 slope computation, coordinate projection, and rover telemetry validation |
-| Node.js | JavaScript runtime | MIT License | Automated benchmarking and validation of `web/data/astar.js` |
-
-## AI Assistance Disclosure
-- **Tool Used:** Google Gemini (AI assistant)
-- **Scope of Use:** Used by the Data Science role to assist with structuring Python validation scripts (`compute_slope.py`, `project_targets.py`, `validate_rover.py`), reviewing sign conventions in directional gradient projection, and drafting technical documentation (`docs/assumptions.md`). All generated code was executed, verified against real NASA PDS/JPL datasets, and validated by the team.
+## استخدام الذكاء الاصطناعي (AI Disclosure)
+تم استخدام نماذج الذكاء الاصطناعي (Gemini و Claude و DeepSeek) كمساعدين في كتابة الأكواد (JavaScript و Python)، وتصحيح الأخطاء (Debugging)، وتوثيق المنهجية، واقتراح تحسينات على خوارزمية A*. لم يتم استخدامها لتوليد أي أرقام أو نتائج علمية، وكل الأرقام المذكورة في التقرير تم استخراجها من تشغيل الكود على بيانات حقيقية بواسطة أعضاء الفريق.

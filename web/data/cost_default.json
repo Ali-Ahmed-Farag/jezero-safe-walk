@@ -3,54 +3,13 @@
   "default_mode": "safest",
   "default_walking_speed_kmh": 2.0,
   "cost_formula": {
-    "safest": "d * (1 + (s_avg / safe_deg)^2)",
+    "safest": "d * (1 + (s_avg / safe)^2)",
     "shortest": "d",
-    "rejection_rule": "s_cell > forbidden_deg or s_avg > forbidden_deg"
+    "rejection_rule": "s_avg > forbidden"
   },
   "profiles": {
-    "Conservative": {
-      "safe_deg": 6.0,
-      "hard_deg": 10.0,
-      "forbidden_deg": 10.0,
-      "description": "High safety margin for cautious EVA traversal"
-    },
-    "Standard": {
-      "safe_deg": 10.0,
-      "hard_deg": 16.0,
-      "forbidden_deg": 16.0,
-      "description": "Anchored to Perseverance traverse (>99% below 16 deg)"
-    },
-    "Extended": {
-      "safe_deg": 14.0,
-      "hard_deg": 20.0,
-      "forbidden_deg": 20.0,
-      "description": "Extended capability up to 20 deg steep terrain"
-    }
-  },
-  "terrain_classes_ui": [
-    {
-      "id": "safe",
-      "label": "Safe",
-      "color": "#22c55e",
-      "meaning": "Low slope, nominal energy cost"
-    },
-    {
-      "id": "difficult",
-      "label": "Difficult",
-      "color": "#eab308",
-      "meaning": "Moderate slope, elevated energy & slip risk"
-    },
-    {
-      "id": "forbidden",
-      "label": "Forbidden",
-      "color": "#ef4444",
-      "meaning": "Steep/NoData hazard, blocked from routing"
-    }
-  ],
-  "risk_indicator_rules": {
-    "Low": ">= 90% of route length in Safe class AND max_slope <= 14 deg",
-    "Moderate": "Not Low, with 0% of route in Forbidden class",
-    "High": "> 30% of route length in Difficult class OR max_slope > hard_deg",
-    "disclaimer": "Estimated preliminary route metrics; not certified for real-time navigation."
+    "Conservative": { "safe": 6.0, "hard": 10.0, "forbidden": 10.0 },
+    "Standard": { "safe": 10.0, "hard": 16.0, "forbidden": 16.0 },
+    "Extended": { "safe": 14.0, "hard": 20.0, "forbidden": 20.0 }
   }
 }
