@@ -1,0 +1,41 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [77.4509, 18.4446]
+      },
+      "properties": {
+        "name": "Octavia E. Butler Landing",
+        "description": "Perseverance rover landing site in Jezero Crater.",
+        "source": "NASA PDS / PLACES"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [77.4200, 18.4800]
+      },
+      "properties": {
+        "name": "Jezero Crater Seitah Formation",
+        "description": "Floor-fractured crater bedrock containing ancient volcanic units.",
+        "source": "NASA Mars 2020 Science Team"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [77.3800, 18.5200]
+      },
+      "properties": {
+        "name": "Neretva Vallis Delta Front",
+        "description": "Ancient river delta deposits, primary target for biosignature detection.",
+        "source": "NASA Mars 2020 Science Team"
+      }
+    }
+  ]
+}
