@@ -13,4 +13,3 @@ Every data source we use must be listed here with its URL, size, download date, 
 Longitude: 77.2229331 to 77.583964
 
 Latitude: 18.3067994 to 18.669315
-| Perseverance Rover Track | `rover_track_clean.csv` & `rover_track.geojson` | NASA PDS / Project Pipeline | ~2.5 MB | 2026-11-13 | Open / Public | Rover track visualization and validation |
