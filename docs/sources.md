@@ -7,7 +7,7 @@ Every data source we use must be listed here with its URL, size, download date, 
 | Jezero CTX DEM 20 m | M20_JezeroCrater_CTXDEM_20m.tif | https://planetarymaps.usgs.gov/mosaic/mars2020_trn/CTX/ScienceInvestigationMaps_JPL/M20_JezeroCrater_CTXDEM_20m.tif | 87 MB | TBD | TBD | Terrain and slope analysis |
 | Jezero HiRISE DEM 1 m | JEZ_hirise_soc_006_DTM_MOLAtopography_DeltaGeoid_1m_Eqc_latTs0_lon0_blend40 (TIF) | NASA Mars Trek: https://trek.nasa.gov/mars/ | size unknown | TBD | TBD | High-resolution terrain validation |
 | Perseverance localized traverse | best_interp.csv (PDS Rover PLACES bundle, via Analyst's Notebook > Resources > Rover traverse and coordinate systems) | https://an.rsl.wustl.edu/m20/ | 8.28 MB | TBD | TBD | Validation against the real traverse |
-| Perseverance Rover Track | `rover_track_clean.csv` & `rover_track.geojson` | https://an.rsl.wustl.edu/m20/ | ~2.5 MB | 2026-11-13 | Open / Public | Rover track visualization and validation |
+| Perseverance Rover Track | `rover_track_clean.csv` & `rover_track.geojson` | https://an.rsl.wustl.edu/m20/ | ~2.5 MB | TBD | TBD | Rover track visualization and validation |
 
 ## Area of interest
 
