@@ -1,0 +1,14 @@
+{
+  "source_type": "cited",
+  "reference": "NASA Mars 2020 MEDA Instrument Reports / Analyst's Notebook",
+  "data_points": [
+    { "local_hour": 0, "temp_celsius": -75.0 },
+    { "local_hour": 3, "temp_celsius": -83.0 },
+    { "local_hour": 6, "temp_celsius": -80.0 },
+    { "local_hour": 9, "temp_celsius": -45.0 },
+    { "local_hour": 12, "temp_celsius": -22.0 },
+    { "local_hour": 15, "temp_celsius": -30.0 },
+    { "local_hour": 18, "temp_celsius": -60.0 },
+    { "local_hour": 21, "temp_celsius": -70.0 }
+  ]
+}
