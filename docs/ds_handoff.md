@@ -7,11 +7,14 @@
 - **scenario_5 (Advanced):** الطول 4.38 كم، متوسط ميل 2.5°، أقصى ميل 12.75°، 96.77% آمن (3.23% صعب)، صعود 136.5م، هبوط 9.4م، الوقت 2.19 ساعة، مستوى المخاطر: منخفض.
 
 ## 2. أوامر إعادة التوليد (Regeneration Commands)
+*(ملاحظة: سكريبتات التحقق والإسقاط تعتمد على ملف DE2 النهائي `data/processed/rover_track_clean.csv` وملف `science_targets.geojson`)*
+
 عشان تعيد توليد الملفات من الصفر بالترتيب:
 1. حساب الميل: `python analysis/compute_slope.py` → يطلع `web/data/slope_u8.bin`
-2. التحقق العلمي: `python analysis/validate_rover.py` → يطلع `web/data/validation_results.json`
-3. اختبار المسارات: `node analysis/test_astar.js` (بيختبر A* على 6 حالات)
-4. توليد مصفوفة السيناريوهات: `python analysis/run_matrix_and_fix.py` → بيطلع `analysis/scenario_matrix.csv` و `analysis/presets_fixed.json`
+2. إسقاط الأهداف ونقاط المركبة: `python analysis/project_targets.py` → يحدّث `analysis/projected_points.json`
+3. التحقق العلمي: `python analysis/validate_rover.py` → يطلع `web/data/validation_results.json`
+4. اختبار المسارات: `node analysis/test_astar.js` (بيختبر A* على 6 حالات)
+5. توليد مصفوفة السيناريوهات: `python analysis/run_matrix_and_fix.py` → بيطلع `analysis/scenario_matrix.csv` و `analysis/presets_fixed.json`
 
 ## 3. توثيق صيغة `cost_default.json`
 ```json
