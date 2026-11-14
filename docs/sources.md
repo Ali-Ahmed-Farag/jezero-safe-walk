@@ -1,18 +1,21 @@
-# Sources & Libraries
+# Sources and Licenses
 
-## البيانات (Data)
-- **M20_JezeroCrater_CTXDEM_20m.tif:** USGS (NASA), تاريخ التحميل: 2026-11-13, رخصة: Public Domain.
-- **best_interp.csv / rover_track_clean.csv:** NASA PDS (PLACES), تاريخ التحميل: 2026-11-13, رخصة: Public Domain.
-- **CTX/HiRISE (basemap):** NASA Mars Trek, تاريخ التحميل: 2026-11-13, رخصة: Public Domain.
+## Data Sources
+| File | Purpose | Source | Link | License/Terms |
+|---|---|---|---|---|
+| M20_JezeroCrater_CTXDEM_20m.tif | Base DEM for slope & routing | USGS / NASA | [USGS Astrogeology](https://astrogeology.usgs.gov/search/map/mars-2020-jezero-crater-landing-site-products) | Public Domain (NASA/USGS) |
+| ctx_basemap.jpg | Base map imagery | NASA Mars Trek | [Mars Trek](https://trek.nasa.gov/mars/) | Public Domain (NASA) |
+| hillshade.png | Terrain shading | Computed from DEM | - | Derived from USGS DEM |
+| best_interp.csv (+ .xml) | Perseverance rover track | NASA PDS (PLACES) | [PDS Analyst's Notebook](https://an.rsl.wustl.edu/m20/) | Public Domain (NASA) |
+| science_targets.geojson | Science targets locations | NASA Mars Trek / Mission Plan | - | Public Domain (NASA) |
+| Thermal Data (cited) | Daily temperature curve | NASA M20 First Weather Report | - | Cited (Archival) |
 
-## المكتبات (Libraries)
-- **NumPy:** v2.0.2 (BSD-3-Clause)
-- **SciPy:** v1.14.1 (BSD-3-Clause)
-- **rasterio:** v1.4.4 (BSD-3-Clause)
-- **matplotlib:** v3.10.1 (PSF/BSD)
-- **pandas:** v2.2.3 (BSD-3-Clause)
-- **Leaflet:** v1.9.x (BSD-2-Clause)
-- **Chart.js:** v4.x (MIT)
+## Libraries and Tools
+| Library | Usage | Version | License |
+|---|---|---|---|
+| Leaflet.js | Interactive map | 1.9.4 | BSD-2-Clause |
+| Inter (Font) | UI Typography | Google Fonts | SIL Open Font License 1.1 |
 
-## استخدام الذكاء الاصطناعي (AI Disclosure)
-تم استخدام نماذج الذكاء الاصطناعي (Gemini و Claude و DeepSeek) كمساعدين في كتابة الأكواد (JavaScript و Python)، وتصحيح الأخطاء (Debugging)، وتوثيق المنهجية، واقتراح تحسينات على خوارزمية A*. لم يتم استخدامها لتوليد أي أرقام أو نتائج علمية، وكل الأرقام المذكورة في التقرير تم استخراجها من تشغيل الكود على بيانات حقيقية بواسطة أعضاء الفريق.
+## AI Usage Disclosure
+- **Code Generation:** The frontend (HTML, CSS, JavaScript) was developed with the assistance of AI tools (DeepSeek and Claude) to accelerate UI development, implement the Canvas charting logic, and integrate the A* algorithm. 
+- **Data Science & Engineering:** The core algorithms (`astar.js`, `metrics.js`), data processing (DEM cropping, slope calculation), and validation metrics were developed by the team's Data Scientist and Data Engineers. AI was used for documentation review and formatting.
