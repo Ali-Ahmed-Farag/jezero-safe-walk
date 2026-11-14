@@ -5,6 +5,8 @@ data/raw/*
 *.tiff
 *.img
 *.zip
+# Partial artifacts (downloads/crops interrupted before atomic promotion)
+*.part
 
 # Small processed rasters are allowed (keep each under ~50 MB)
 # This line must stay AFTER the *.tif / *.tiff lines above
