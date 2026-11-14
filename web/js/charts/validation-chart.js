@@ -3,16 +3,16 @@
 export function drawValidationScatter(canvasId, sampleData) {
   const canvas = document.getElementById(canvasId);
   if (!canvas || !sampleData || sampleData.length === 0) return;
-  
+
   const parent = canvas.parentElement;
   const dpr = window.devicePixelRatio || 1;
-  
+
   canvas.width = parent.clientWidth * dpr;
   canvas.height = parent.clientHeight * dpr;
-  
+
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
-  
+
   const width = parent.clientWidth;
   const height = parent.clientHeight;
   ctx.clearRect(0, 0, width, height);
@@ -23,13 +23,13 @@ export function drawValidationScatter(canvasId, sampleData) {
 
   // Limits for X and Y (Pitch)
   let minVal = -25, maxVal = 25;
-  
+
   const scaleX = (v) => padding.left + ((v - minVal) / (maxVal - minVal)) * w;
   const scaleY = (v) => padding.top + h - ((v - minVal) / (maxVal - minVal)) * h;
 
   // Draw Axes
   ctx.beginPath();
-  ctx.strokeStyle = '#8A93A8';
+  ctx.strokeStyle = '#5E739A';
   ctx.lineWidth = 1;
   ctx.moveTo(padding.left, padding.top);
   ctx.lineTo(padding.left, height - padding.bottom);
@@ -38,7 +38,7 @@ export function drawValidationScatter(canvasId, sampleData) {
 
   // Draw 1:1 Line (y = x)
   ctx.beginPath();
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.strokeStyle = 'rgba(11, 27, 51, 0.35)';
   ctx.setLineDash([5, 5]);
   ctx.moveTo(scaleX(minVal), scaleY(minVal));
   ctx.lineTo(scaleX(maxVal), scaleY(maxVal));
@@ -57,17 +57,17 @@ export function drawValidationScatter(canvasId, sampleData) {
   });
 
   // Draw Labels
-  ctx.fillStyle = '#8A93A8';
+  ctx.fillStyle = '#5E739A';
   ctx.font = '11px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText('DEM Pitch (°)', width / 2, height - 5);
-  
+
   ctx.save();
   ctx.translate(12, height / 2);
   ctx.rotate(-Math.PI / 2);
   ctx.fillText('Rover Pitch (°)', 0, 0);
   ctx.restore();
-  
+
   // Ticks
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';

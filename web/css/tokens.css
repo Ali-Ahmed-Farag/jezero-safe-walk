@@ -1,40 +1,52 @@
 :root {
-  /* Deep navy / black NOVA base */
-  --bg-0: #0E1730;
-  --bg-1: #122040;
-  --bg-2: #16264A;
+  /* ===== LIGHT CYAN / SKY-BLUE THEME ===== */
+  /* Main surfaces */
+  --bg-0: #EAFBFF;
+  --bg-1: #DCF5FE;
+  --bg-2: #C8F4FF;
 
-  /* Glass surfaces */
-  --glass-bg: rgba(42, 62, 104, 0.55);
-  --glass-bg-strong: rgba(46, 66, 108, 0.80);
-  --glass-border: rgba(150, 195, 255, 0.32);
-  --glass-border-strong: rgba(160, 200, 255, 0.48);
-  --glass-glow: 0 0 28px rgba(96, 180, 255, 0.10), inset 0 1px 0 rgba(170, 210, 255, 0.10);
+  /* Secondary panels */
+  --surface: #F2FCFF;
+  --surface-2: #E2F8FF;
+  --surface-3: #C8F4FF;
+  --panel: #C8F4FF;
 
-  /* Electric blue / cyan lighting */
-  --blue: #5FB0FF;
-  --cyan: #8FF7FF;
-  --cyan-soft: rgba(125, 243, 255, 0.12);
-  --blue-soft: rgba(77, 163, 255, 0.12);
+  /* Cyan highlights + accent blue */
+  --cyan: #80E8FA;
+  --cyan-soft: rgba(128, 232, 250, 0.35);
+  --accent: #27B9E8;
+  --accent-strong: #1B9CC9;
+  --accent-soft: rgba(39, 185, 232, 0.14);
 
-  /* Mars mission accents (kept from data semantics) */
-  --accent: #FF6B3D;
-  --accent-soft: rgba(255, 107, 61, 0.14);
-  --safe: #3FB950;
-  --hard: #E3B341;
-  --forbidden: #F85149;
-  --hero-green: #8FE3B6;
+  /* Text — dark navy for contrast */
+  --text: #0B1B33;
+  --text-dim: #33527A;
+  --text-faint: #5E739A;
 
-  /* Text */
-  --text: #E9F0FF;
-  --text-dim: #BCC9E6;
-  --text-faint: #93A3CC;
+  /* Borders (subtle, blue-tinted) */
+  --border: rgba(39, 185, 232, 0.30);
+  --border-strong: rgba(39, 185, 232, 0.50);
+  --glass-border: rgba(39, 185, 232, 0.28);
+  --glass-border-strong: rgba(39, 185, 232, 0.45);
+
+  /* Glass */
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-strong: rgba(255, 255, 255, 0.78);
+  --glass-glow: 0 0 20px rgba(39, 185, 232, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  /* Mission semantics (kept from the data) */
+  --safe: #1E9E50;
+  --hard: #B7791F;
+  --forbidden: #D64545;
+  --hero-green: #1E9E50;
+
+  /* Map letterbox (light, matches frame) */
+  --map-bg: #DFF4FB;
 
   /* Typography */
   --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
   --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "SF Mono", monospace;
-  --map-bg: #152443;
 
   /* Shape */
   --radius-sm: 8px;
@@ -49,8 +61,9 @@
   --space-5: 24px;
   --space-6: 32px;
 
-  --shadow-1: 0 4px 16px rgba(0, 0, 0, 0.35);
-  --shadow-2: 0 14px 40px rgba(0, 0, 0, 0.5);
+  /* Shadows — restrained, blue-tinted */
+  --shadow-1: 0 4px 16px rgba(11, 27, 51, 0.10);
+  --shadow-2: 0 14px 40px rgba(11, 27, 51, 0.14);
 
   --touch: 44px;
 }

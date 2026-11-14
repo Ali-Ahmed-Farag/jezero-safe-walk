@@ -58,6 +58,7 @@
   .scenario-btn, .mode-btn, .suit-chip { min-height: 44px; }
 
   /* Scenario entries: 2x2 grid keeps all four visible with 44px touch targets */
+  #card-scenarios { min-height: 245px; }
   .scenario-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
   .scenario-btn { padding: 6px 12px; }
   .scenario-btn .sdist { font-size: 10px; }
@@ -110,7 +111,7 @@
   .nova { flex: 1; min-height: 0; }
   .row-top { flex: 1 1 0; min-height: 0; }
   /* stacked full-width cards size to their content - nothing clips */
-  .row-cards { flex: 0 0 auto; min-height: 0; }
+  .row-cards { flex: 0 0 auto; min-height: 0; grid-auto-rows: max-content; }
   .card { min-height: 0; }
   .stats-rail { min-height: 0; }
   .map-stage { min-height: 0; height: 100%; }
