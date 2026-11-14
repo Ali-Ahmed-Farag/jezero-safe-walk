@@ -1,3 +1,9 @@
+/* ============================================================
+   LAYOUT — structure only (colors live in tokens + components)
+   NOVA light-cyan grid:
+     topnav row / hero | map | Mission Brief rail / 4 cards / layers strip
+   ============================================================ */
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -5,114 +11,202 @@
 }
 
 body {
-  background-color: var(--bg);
+  background:
+    radial-gradient(1100px 520px at 78% -8%, rgba(128, 232, 250, 0.40), transparent 62%),
+    radial-gradient(900px 480px at 12% 108%, rgba(39, 185, 232, 0.18), transparent 60%),
+    radial-gradient(2px 2px at 12% 22%, rgba(39, 185, 232, 0.40), transparent 55%),
+    radial-gradient(2px 2px at 32% 66%, rgba(11, 27, 51, 0.16), transparent 55%),
+    radial-gradient(1.5px 1.5px at 55% 12%, rgba(11, 27, 51, 0.20), transparent 55%),
+    radial-gradient(1.5px 1.5px at 74% 76%, rgba(39, 185, 232, 0.26), transparent 55%),
+    radial-gradient(2px 2px at 88% 32%, rgba(11, 27, 51, 0.18), transparent 55%),
+    linear-gradient(175deg, #EAFBFF 0%, #DCF5FE 55%, #C8F4FF 100%);
   color: var(--text);
   font-family: var(--font);
-  height: 100vh;
+  font-size: 13px;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Top Bar */
-.topbar {
+/* ===== Top Navigation — own row, above everything ===== */
+.topnav {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  background-color: var(--surface);
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--border);
-  height: 56px;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1500;
+}
+
+/* ===== Main NOVA grid ===== */
+.nova {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 6px var(--space-5) var(--space-5);
+  flex: 1;
+  min-height: 0;
+}
+
+.row-top {
+  display: grid;
+  grid-template-columns: minmax(300px, 370px) 1fr minmax(215px, 235px);
+  grid-template-rows: minmax(0, 1fr); /* rail scrolls inside its cell - never overlaps cards */
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+}
+
+.row-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
   flex-shrink: 0;
 }
 
-.topbar-left {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.brand-mark {
-  color: var(--accent);
-  font-size: 20px;
-}
-
-.brand-name {
-  font-weight: 600;
-  font-size: 16px;
-  letter-spacing: 0.5px;
-}
-
-.badge-warning {
-  font-size: 10px;
-  color: var(--accent);
-  background-color: rgba(255, 107, 61, 0.1);
-  border: 1px solid rgba(255, 107, 61, 0.3);
-  padding: 2px 8px;
-  border-radius: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.topbar-right {
-  display: flex;
-  gap: var(--space-2);
-}
-
-/* Main Layout Grid */
-.layout {
-  display: grid;
-  grid-template-columns: 280px 1fr 320px;
-  grid-template-rows: 1fr 220px;
-  grid-template-areas:
-    "left map right"
-    "left bottom right";
-  flex: 1;
-  gap: 1px; /* uses background color as border */
-  background-color: var(--border);
-  overflow: hidden;
-}
-
-/* Panels */
-.panel {
-  background-color: var(--surface);
+/* ===== Hero column ===== */
+.hero {
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  min-width: 0;
 }
 
-.panel-left { grid-area: left; }
-.panel-right { grid-area: right; }
-.panel-bottom { grid-area: bottom; }
+.hero-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.hero-print { margin-top: 2px; }
 
-.map-container {
-  grid-area: map;
+/* ===== Map stage ===== */
+.map-stage {
   position: relative;
-  background-color: var(--bg);
-  /* سطرين مهمين عشان الخريطة تاخد المساحة كلها */
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  min-height: 460px;
+}
+.map-stage #map {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
 }
 
-#map {
-  width: 100%;
-  height: 100%;
-  background-color: #000;
-}
-
-.panel-header {
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-dim);
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--border);
-  background-color: var(--surface-2);
-}
-
-.panel-body {
+/* ===== Stats rail ===== */
+.stats-rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
   padding: var(--space-4);
-  flex: 1;
+  border-radius: var(--radius-lg);
+  overflow-y: auto;
+  min-height: 0;
+}
+.rail-duo { display: flex; gap: var(--space-4); }
+.rail-divider { height: 1px; background: var(--glass-border); margin: 6px 0; }
+.rail-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.rail-stats { display: flex; flex-direction: column; gap: 10px; margin-top: auto; padding-top: 8px; }
+.rail-stat { display: flex; flex-direction: column; }
+
+/* ===== Bottom cards row ===== */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  min-width: 0;
+}
+.card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.card-foot { margin-top: auto; font-size: 10.5px; line-height: 1.5; }
+
+/* ===== Cards' inner content ===== */
+.scenario-list { display: flex; flex-direction: column; gap: 6px; }
+.profile-wrap { flex: 1; min-height: 120px; position: relative; overflow: hidden; }
+#profile-canvas { width: 100%; height: 100%; display: block; }
+.thermal-mini { display: flex; gap: 10px; }
+.thermal-chip { flex: 1; text-align: center; }
+.validation-mini { display: flex; gap: 10px; }
+.mini-stat { flex: 1; text-align: center; }
+
+/* ===== Layers strip ===== */
+.layers-strip { padding: var(--space-3) var(--space-4); }
+.layers-strip-body {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(150px, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+.layers-strip .layer-item { gap: 3px; padding-bottom: 4px; }
+.layers-strip .legend { margin-top: 3px; }
+.suit-sep { width: 1px; background: var(--glass-border); align-self: stretch; }
+.suit-inline { display: flex; flex-wrap: wrap; gap: 8px; align-content: start; }
+
+/* ===== Map toolbar & hint ===== */
+.map-toolbar {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border-radius: var(--radius-md);
+}
+.tool-btn { cursor: pointer; white-space: nowrap; }
+.mode-switch { display: flex; gap: 4px; margin-top: 2px; }
+.mode-btn { flex: 1; text-align: center; }
+.map-hint {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 1000;
+  max-width: calc(100% - 24px);
+  text-align: center;
+}
+
+/* ===== Dropdown ===== */
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 76px;
+  z-index: 2500;
+  display: flex;
+  flex-direction: column;
+  min-width: 260px;
+  padding: 6px;
+  gap: 2px;
+}
+
+/* ===== Modals ===== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+.modal { display: flex; flex-direction: column; width: 92%; max-width: 640px; max-height: 84vh; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-3) var(--space-4); }
+.modal-body { padding: var(--space-4); overflow-y: auto; line-height: 1.7; }
+.validation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); margin: var(--space-4) 0; }
+.val-card { text-align: center; }
+.val-chart-container { height: 250px; width: 100%; position: relative; margin-top: 10px; }
+.compare-table, .val-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.compare-table th, .compare-table td, .val-table th, .val-table td { padding: 8px 6px; text-align: left; }
+.compare-table td { font-family: var(--font-mono); }
+
+/* ===== Desktop: single-viewport dashboard ===== */
+@media (min-width: 1025px) {
+  body { height: 100vh; overflow: hidden; }
+  .nova { flex: 1; min-height: 0; }
+  .row-top { flex: 1 1 0; min-height: 0; }
+  .row-cards { flex: 0 0 232px; min-height: 232px; }
+  .stats-rail { min-height: 0; }
+  .map-stage { min-height: 0; height: 100%; }
+  .layers-strip { flex: 0 0 190px; min-height: 190px; overflow-y: auto; }
 }

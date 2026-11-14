@@ -1,7 +1,7 @@
 import { loadGridMeta, loadElevation, loadSlope } from './data-loader.js';
 import { createSlopeCanvas } from './map/raster-layers.js';
 import { loadJSON, projectGeoJSON, addRoverTrack, addScienceTargets } from './map/vector-layers.js';
-import { handleMapClick, calculateAndDrawRoute } from './routing/route-controller.js';
+import { handleMapClick, calculateAndDrawRoute, clearRoute } from './routing/route-controller.js';
 import { drawProfile } from './charts/elevation-profile.js';
 import { drawValidationScatter } from './charts/validation-chart.js';
 import { latLonToRowCol, rowColToLatLon } from './grid-utils.js';
@@ -11,6 +11,8 @@ const state = {
   profile: { safe: 10, hard: 16, forbidden: 16 },
   thermal: null, roverTrack: null,
   speedKmh: 2,
+  routeMode: 'safest',      // exposed via the map toolbar mode switch (safest | shortest)
+  scenarioName: null,       // set when a canonical preset is used; null for manual map-click routes
 };
 
 const SUIT_PRESETS = {
@@ -25,6 +27,11 @@ const map = L.map("map", {
 
 const ui = { hint: document.getElementById("map-hint") };
 let slopeOverlay = null, roverLayer = null, targetsLayer = null;
+
+function setScenarioLabel(name) {
+  const el = document.getElementById('mb-scenario');
+  if (el) el.textContent = name || '—';
+}
 let currentMetrics = null;
 
 let calcTimeout = null;
@@ -96,7 +103,13 @@ async function boot() {
     state.slope = await loadSlope('./data/slope_u8.bin', expectedCells);
 
     const mapBounds = [[0, 0], [state.meta.height, state.meta.width]];
-    map.setView([state.meta.height / 2, state.meta.width / 2], 1);
+    // Phase 2.2: cover-fit the DEM raster to the container (no empty letterbox).
+    // Zoom chosen so the raster covers BOTH container dimensions (aspect preserved,
+    // vertical overflow stays pannable inside the raster via maxBounds).
+    fitMapToGrid();
+    setTimeout(fitMapToGrid, 80);   // re-fit once the NOVA layout has settled
+    map.options.maxBoundsViscosity = 1.0; // Leaflet reads viscosity from options when clamping to maxBounds
+    map.setMaxBounds(mapBounds);
 
     // Add CTX Basemap
     try {
@@ -134,6 +147,12 @@ async function boot() {
     await setupPresets();
     await setupValidation();
     await setupThermal();
+    setupMapToolbar();
+    setupOpacityReadouts();
+    setupHeroActions();
+    setupMiniCards();
+    // Correct Leaflet sizing after the full NOVA layout settles
+    setTimeout(() => { refitOnResize(); }, 250);
     
     document.getElementById('input-speed').addEventListener('input', (e) => {
       state.speedKmh = parseFloat(e.target.value) || 2;
@@ -192,11 +211,23 @@ async function setupPresets() {
           ui.hint.textContent = "Preset endpoint outside the grid.";
           return;
         }
+        state.scenarioName = `${p.title || p.name || p.id} (preset)`;
+        setScenarioLabel(state.scenarioName);
         L.circleMarker([state.start[0], state.start[1]], { radius: 7, color: '#fff', fillColor: '#3FB950', fillOpacity: 1, weight: 2 }).addTo(map);
         L.circleMarker([state.end[0], state.end[1]], { radius: 7, color: '#fff', fillColor: '#F85149', fillOpacity: 1, weight: 2 }).addTo(map);
-        debouncedCalculateRoute(map, state, ui, updateMissionBrief, "safest");
+        debouncedCalculateRoute(map, state, ui, updateMissionBrief, state.routeMode);
       });
       presetsMenu.appendChild(btn);
+
+      // NOVA scenario card (bottom) reuses the exact same canonical handler
+      const cardBtn = document.createElement('button');
+      cardBtn.className = 'scenario-btn';
+      cardBtn.type = 'button';
+      cardBtn.innerHTML = `<span>${p.title || p.id}</span><span class="sdist">${p.rover_distance_km != null ? p.rover_distance_km.toFixed(3) + ' km' : ''}</span>`;
+      cardBtn.title = 'Plan this scenario (safest/shortest follows the map toolbar mode)';
+      cardBtn.addEventListener('click', () => btn.click());
+      const scenarioList = document.getElementById('scenario-list');
+      if (scenarioList) scenarioList.appendChild(cardBtn);
     });
 
     document.getElementById('btn-presets').addEventListener('click', (e) => {
@@ -204,7 +235,7 @@ async function setupPresets() {
       presetsMenu.style.display = presetsMenu.style.display === 'none' ? 'flex' : 'none';
     });
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('#btn-presets')) presetsMenu.style.display = 'none';
+      if (!e.target.closest('#btn-presets') && !e.target.closest('#btn-scenarios-hero')) presetsMenu.style.display = 'none';
     });
   } catch (err) { console.warn("Presets not loaded", err); }
 }
@@ -311,6 +342,8 @@ document.querySelectorAll('input[name="suit"]').forEach(radio => {
         if (layer instanceof L.CircleMarker) map.removeLayer(layer);
       });
       state.start = null; state.end = null;
+      state.scenarioName = null;
+      setScenarioLabel('—');
       ui.hint.textContent = "Profile changed. Click to set Start again.";
       updateMissionBrief(null, null);
     }
@@ -320,8 +353,13 @@ document.querySelectorAll('input[name="suit"]').forEach(radio => {
 map.on("click", (e) => {
   if (!state.meta || !state.slope) return;
   handleMapClick(map, e, state, ui, (res, metrics) => {
-    if (state.end) debouncedCalculateRoute(map, state, ui, updateMissionBrief, "safest");
-    else updateMissionBrief(null, null);
+    if (state.end) {
+      if (!state.scenarioName) setScenarioLabel('Custom (map clicks)');
+      debouncedCalculateRoute(map, state, ui, updateMissionBrief, state.routeMode);
+    } else {
+      setScenarioLabel('—');
+      updateMissionBrief(null, null);
+    }
   });
 });
 
@@ -338,6 +376,7 @@ window.addEventListener('click', (e) => modals.forEach(m => { if (e.target === m
 
 window.addEventListener('resize', () => {
   setTimeout(() => {
+    refitOnResize();
     map.invalidateSize();
     if (currentMetrics && currentMetrics.arrays) drawProfile('profile-canvas', currentMetrics.arrays);
     if (document.getElementById('validation-modal').style.display === 'flex' && state.validationSample) drawValidationScatter('val-scatter-canvas', state.validationSample);
@@ -436,6 +475,122 @@ async function setupValidation() {
   } catch (err) {
     console.warn("Validation data not loaded", err);
   }
+}
+
+/* ===== NOVA additions: map toolbar, opacity readouts, hero CTAs, mini cards ===== */
+
+// Cover-fit the DEM raster to the map container: the zoom is chosen so the raster
+// covers the container in both dimensions (aspect preserved, never stretched).
+// Derived from the canonical grid metadata - no guessed coordinates.
+function fitMapToGrid() {
+  if (!state.meta || !map) return;
+  const mapEl = document.getElementById('map');
+  const cw = mapEl.clientWidth || mapEl.getBoundingClientRect().width;
+  const ch = mapEl.clientHeight || mapEl.getBoundingClientRect().height;
+  if (!cw || !ch) return;
+  const coverZoom = Math.max(
+    Math.log2(cw / state.meta.width),
+    Math.log2(ch / state.meta.height)
+  );
+  const snapped = Math.ceil(coverZoom * 4) / 4; // zoomSnap is 0.25 - round UP to stay covered
+  map.setView([state.meta.height / 2, state.meta.width / 2], snapped);
+  map.setMinZoom(snapped); // zooming out further would expose empty space
+}
+
+// Re-fit when the container size changes (layout settling + window resize)
+function refitOnResize() {
+  fitMapToGrid();
+  map.invalidateSize();
+}
+
+function setupMapToolbar() {
+  // Reset Route — clears layers, state, brief, and hint (audit V-07)
+  document.getElementById('btn-reset-route').addEventListener('click', () => {
+    clearRoute(map);
+    state.start = null;
+    state.end = null;
+    state.scenarioName = null;
+    setScenarioLabel('—');
+    updateMissionBrief(null, null);
+    ui.hint.textContent = 'Click on the map to set Start';
+  });
+
+  // Center on Landing — landing cell from the canonical contract (audit V-07)
+  document.getElementById('btn-center-landing').addEventListener('click', () => {
+    if (!state.meta) return;
+    const rc = latLonToRowCol(18.444627, 77.450886, state.meta); // Octavia E. Butler Landing
+    map.setView([Math.floor(rc.row), Math.floor(rc.col)], map.getZoom());
+  });
+
+  // Route mode switch — exposes the two modes the router already supports (no algorithm change)
+  const modeButtons = [['mode-safest', 'safest'], ['mode-shortest', 'shortest']];
+  modeButtons.forEach(([id, mode]) => {
+    document.getElementById(id).addEventListener('click', () => {
+      if (state.routeMode === mode) return;
+      state.routeMode = mode;
+      modeButtons.forEach(([bid, m]) => {
+        document.getElementById(bid).classList.toggle('active', m === mode);
+      });
+      if (state.start && state.end) {
+        clearRoute(map);
+        debouncedCalculateRoute(map, state, ui, updateMissionBrief, mode);
+      }
+    });
+  });
+}
+
+function setupOpacityReadouts() {
+  document.querySelectorAll('.layer-item input[type="range"]').forEach(range => {
+    const out = range.closest('.layer-item')?.querySelector('.opacity-value');
+    const upd = () => { if (out) out.textContent = range.value + '%'; };
+    range.addEventListener('input', upd);
+    upd();
+  });
+}
+
+function setupHeroActions() {
+  const heroScenarios = document.getElementById('btn-scenarios-hero');
+  if (heroScenarios) heroScenarios.addEventListener('click', () => {
+    document.getElementById('btn-presets').click();
+  });
+  const startPlanning = document.getElementById('btn-start-planning');
+  if (startPlanning) startPlanning.addEventListener('click', () => {
+    document.getElementById('btn-center-landing').click();
+    document.getElementById('map').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    ui.hint.textContent = 'Click on the map to set Start';
+  });
+  const btnNavMap = document.getElementById('btn-nav-map');
+  if (btnNavMap) btnNavMap.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
+function setupMiniCards() {
+  // Thermal mini chips (same data as the modal, no new values invented)
+  if (state.thermal && state.thermal.data_kind === 'extrema_only' && state.thermal.curve) {
+    const mini = document.getElementById('thermal-mini');
+    if (mini) {
+      mini.innerHTML = '';
+      state.thermal.curve.forEach(pt => {
+        const chip = document.createElement('div');
+        chip.className = 'thermal-chip';
+        const cls = pt.label === 'Night Low' ? 'cold' : 'hot';
+        chip.innerHTML = `<span class="t-label">${pt.label}</span><span class="t-value ${cls}">${pt.temp}${state.thermal.unit}</span>`;
+        mini.appendChild(chip);
+      });
+    }
+    const open = document.getElementById('btn-thermal-open');
+    if (open) open.addEventListener('click', () => document.getElementById('btn-thermal').click());
+  }
+  // Validation mini stats + link to the full modal
+  const pitch = document.getElementById('val-pitch-r')?.textContent;
+  const roll = document.getElementById('val-roll-r')?.textContent;
+  const pct = document.getElementById('rr-safest-pct')?.textContent;
+  if (pitch) document.getElementById('val-mini-pitch').textContent = pitch;
+  if (roll) document.getElementById('val-mini-roll').textContent = roll;
+  if (pct) document.getElementById('val-mini-replay').textContent = pct;
+  const openVal = document.getElementById('btn-validation-open');
+  if (openVal) openVal.addEventListener('click', () => document.getElementById('btn-validation').click());
 }
 
 boot();

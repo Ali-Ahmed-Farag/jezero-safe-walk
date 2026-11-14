@@ -1,24 +1,69 @@
 :root {
-  --bg: #0B0F1A;
-  --surface: #141A2B;
-  --surface-2: #1B2338;
-  --border: #232C45;
-  --accent: #FF6B3D;
-  --safe: #3FB950;
-  --hard: #E3B341;
-  --forbidden: #F85149;
-  --text: #E6EAF2;
-  --text-dim: #8A93A8;
+  /* ===== LIGHT CYAN / SKY-BLUE THEME ===== */
+  /* Main surfaces */
+  --bg-0: #EAFBFF;
+  --bg-1: #DCF5FE;
+  --bg-2: #C8F4FF;
 
+  /* Secondary panels */
+  --surface: #F2FCFF;
+  --surface-2: #E2F8FF;
+  --surface-3: #C8F4FF;
+  --panel: #C8F4FF;
+
+  /* Cyan highlights + accent blue */
+  --cyan: #80E8FA;
+  --cyan-soft: rgba(128, 232, 250, 0.35);
+  --accent: #27B9E8;
+  --accent-strong: #1B9CC9;
+  --accent-soft: rgba(39, 185, 232, 0.14);
+
+  /* Text — dark navy for contrast */
+  --text: #0B1B33;
+  --text-dim: #33527A;
+  --text-faint: #5E739A;
+
+  /* Borders (subtle, blue-tinted) */
+  --border: rgba(39, 185, 232, 0.30);
+  --border-strong: rgba(39, 185, 232, 0.50);
+  --glass-border: rgba(39, 185, 232, 0.28);
+  --glass-border-strong: rgba(39, 185, 232, 0.45);
+
+  /* Glass */
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-bg-strong: rgba(255, 255, 255, 0.78);
+  --glass-glow: 0 0 20px rgba(39, 185, 232, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  /* Mission semantics (kept from the data) */
+  --safe: #1E9E50;
+  --hard: #B7791F;
+  --forbidden: #D64545;
+  --hero-green: #1E9E50;
+
+  /* Map letterbox (light, matches frame) */
+  --map-bg: #DFF4FB;
+
+  /* Typography */
   --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "SF Mono", monospace;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 12px;
+  /* Shape */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 26px;
 
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-5: 24px;
+  --space-6: 32px;
+
+  /* Shadows — restrained, blue-tinted */
+  --shadow-1: 0 4px 16px rgba(11, 27, 51, 0.10);
+  --shadow-2: 0 14px 40px rgba(11, 27, 51, 0.14);
+
+  --touch: 44px;
 }
