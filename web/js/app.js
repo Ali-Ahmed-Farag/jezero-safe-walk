@@ -103,8 +103,13 @@ async function boot() {
     state.slope = await loadSlope('./data/slope_u8.bin', expectedCells);
 
     const mapBounds = [[0, 0], [state.meta.height, state.meta.width]];
-    // Fit the whole Jezero grid inside the frame (no empty letterbox areas)
-    map.fitBounds(mapBounds);
+    // Phase 2.2: cover-fit the DEM raster to the container (no empty letterbox).
+    // Zoom chosen so the raster covers BOTH container dimensions (aspect preserved,
+    // vertical overflow stays pannable inside the raster via maxBounds).
+    fitMapToGrid();
+    setTimeout(fitMapToGrid, 80);   // re-fit once the NOVA layout has settled
+    map.options.maxBoundsViscosity = 1.0; // Leaflet reads viscosity from options when clamping to maxBounds
+    map.setMaxBounds(mapBounds);
 
     // Add CTX Basemap
     try {
@@ -147,7 +152,7 @@ async function boot() {
     setupHeroActions();
     setupMiniCards();
     // Correct Leaflet sizing after the full NOVA layout settles
-    setTimeout(() => { map.invalidateSize(); map.fitBounds(mapBounds); }, 250);
+    setTimeout(() => { refitOnResize(); }, 250);
     
     document.getElementById('input-speed').addEventListener('input', (e) => {
       state.speedKmh = parseFloat(e.target.value) || 2;
@@ -371,6 +376,7 @@ window.addEventListener('click', (e) => modals.forEach(m => { if (e.target === m
 
 window.addEventListener('resize', () => {
   setTimeout(() => {
+    refitOnResize();
     map.invalidateSize();
     if (currentMetrics && currentMetrics.arrays) drawProfile('profile-canvas', currentMetrics.arrays);
     if (document.getElementById('validation-modal').style.display === 'flex' && state.validationSample) drawValidationScatter('val-scatter-canvas', state.validationSample);
@@ -472,6 +478,30 @@ async function setupValidation() {
 }
 
 /* ===== NOVA additions: map toolbar, opacity readouts, hero CTAs, mini cards ===== */
+
+// Cover-fit the DEM raster to the map container: the zoom is chosen so the raster
+// covers the container in both dimensions (aspect preserved, never stretched).
+// Derived from the canonical grid metadata - no guessed coordinates.
+function fitMapToGrid() {
+  if (!state.meta || !map) return;
+  const mapEl = document.getElementById('map');
+  const cw = mapEl.clientWidth || mapEl.getBoundingClientRect().width;
+  const ch = mapEl.clientHeight || mapEl.getBoundingClientRect().height;
+  if (!cw || !ch) return;
+  const coverZoom = Math.max(
+    Math.log2(cw / state.meta.width),
+    Math.log2(ch / state.meta.height)
+  );
+  const snapped = Math.ceil(coverZoom * 4) / 4; // zoomSnap is 0.25 - round UP to stay covered
+  map.setView([state.meta.height / 2, state.meta.width / 2], snapped);
+  map.setMinZoom(snapped); // zooming out further would expose empty space
+}
+
+// Re-fit when the container size changes (layout settling + window resize)
+function refitOnResize() {
+  fitMapToGrid();
+  map.invalidateSize();
+}
 
 function setupMapToolbar() {
   // Reset Route — clears layers, state, brief, and hint (audit V-07)

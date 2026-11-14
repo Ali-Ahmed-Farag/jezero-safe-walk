@@ -6,14 +6,14 @@
 
 body {
   background:
-    radial-gradient(1100px 520px at 78% -8%, rgba(77, 163, 255, 0.16), transparent 62%),
-    radial-gradient(900px 480px at 12% 108%, rgba(125, 243, 255, 0.07), transparent 60%),
+    radial-gradient(1100px 520px at 78% -8%, rgba(96, 180, 255, 0.22), transparent 62%),
+    radial-gradient(900px 480px at 12% 108%, rgba(143, 247, 255, 0.10), transparent 60%),
     radial-gradient(2px 2px at 12% 22%, rgba(233, 240, 255, 0.4), transparent 55%),
     radial-gradient(2px 2px at 32% 66%, rgba(233, 240, 255, 0.25), transparent 55%),
     radial-gradient(1.5px 1.5px at 55% 12%, rgba(233, 240, 255, 0.32), transparent 55%),
     radial-gradient(1.5px 1.5px at 74% 76%, rgba(233, 240, 255, 0.2), transparent 55%),
     radial-gradient(2px 2px at 88% 32%, rgba(233, 240, 255, 0.28), transparent 55%),
-    linear-gradient(175deg, #0C1220 0%, #0F1626 55%, #121A2C 100%);
+    linear-gradient(175deg, #101A32 0%, #142038 55%, #182748 100%);
   background-attachment: fixed;
   color: var(--text);
   font-family: var(--font);
@@ -114,7 +114,7 @@ body {
   grid-template-columns: minmax(300px, 370px) 1fr minmax(215px, 235px);
   grid-template-rows: minmax(0, 1fr); /* rail content scrolls inside its cell - never overlaps cards */
   gap: 14px;
-  flex: 5 1 0;
+  flex: 1 1 0;
   min-height: 0;
 }
 
@@ -122,8 +122,8 @@ body {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
-  flex: 2 1 0;
-  min-height: 0;
+  flex: 0 0 232px;
+  min-height: 232px;
 }
 .card { min-height: 0; }
 
@@ -294,7 +294,7 @@ body {
 .link-btn:hover { text-decoration: underline; }
 
 /* ===== Scenario card ===== */
-.scenario-list { display: flex; flex-direction: column; gap: 8px; }
+.scenario-list { display: flex; flex-direction: column; gap: 6px; }
 .scenario-btn {
   display: flex;
   justify-content: space-between;
@@ -357,8 +357,9 @@ body {
 
 /* ===== Layers strip ===== */
 .layers-strip { border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4); overflow: hidden; }
-.layers-strip .layer-item { gap: 4px; padding-bottom: 6px; }
-.layers-strip .legend { margin-top: 4px; }
+.layers-strip .layer-item { gap: 3px; padding-bottom: 4px; }
+.layers-strip .legend { margin-top: 3px; }
+#scenario-list .scenario-btn { padding: 6px 14px; min-height: 38px; }
 .layers-strip-title { font-size: 10.5px; font-weight: 700; letter-spacing: 1.8px; color: var(--text); margin-bottom: var(--space-3); }
 .layers-strip-body {
   display: grid;

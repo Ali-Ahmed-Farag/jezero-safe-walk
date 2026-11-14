@@ -57,6 +57,11 @@
   .nav-btn, .btn-hero, .tool-btn, .dropdown-menu button,
   .scenario-btn, .mode-btn, .suit-chip { min-height: 44px; }
 
+  /* Scenario entries: 2x2 grid keeps all four visible with 44px touch targets */
+  .scenario-list { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .scenario-btn { padding: 6px 12px; }
+  .scenario-btn .sdist { font-size: 10px; }
+
   /* Topbar: brand+status row, actions row scrolls horizontally */
   .topnav {
     flex-wrap: wrap;
@@ -103,10 +108,11 @@
 @media (min-width: 1025px) {
   body { height: 100vh; overflow: hidden; }
   .nova { flex: 1; min-height: 0; }
-  .row-top { flex: 5 1 0; min-height: 0; }
-  .row-cards { flex: 2 1 0; min-height: 0; }
+  .row-top { flex: 1 1 0; min-height: 0; }
+  /* stacked full-width cards size to their content - nothing clips */
+  .row-cards { flex: 0 0 auto; min-height: 0; }
   .card { min-height: 0; }
   .stats-rail { min-height: 0; }
   .map-stage { min-height: 0; height: 100%; }
-  .layers-strip { flex: 2 1 0; min-height: 0; overflow-y: auto; }
+  .layers-strip { flex: 0 0 190px; min-height: 190px; overflow-y: auto; }
 }

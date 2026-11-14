@@ -84,7 +84,20 @@ Owner-approved polish pass after reviewing the rendered NOVA UI. Root causes fou
 
 **Modified in this pass:** `web/css/layout.css` (full NOVA rewrite), `web/css/tokens.css`, `web/css/components.css`, `web/css/responsive.css`, `web/js/app.js` (fitBounds/invalidateSize/keep-zoom centering). Data/routing contracts untouched (blob check unchanged).
 
-## 12. Final readiness verdict (updated after Phase 2.1)
+## 11b. Phase 2.2 - Map Fit, Scenario Card & Brighter Blue (2026-11-14, same branch)
+
+| Priority | Issue | Root cause | Fix | Verified |
+|---|---|---|---|---|
+| P1 | DEM raster occupied a small portion of the map container on fresh load (huge empty area) | Leaflet `zoomSnap: 1` forced fitBounds to an integer zoom ~2 levels too far out (raster rendered at ~25% of the container) | **Cover-fit**: `fitMapToGrid()` derives the zoom from the canonical grid metadata so the raster covers BOTH container dimensions (aspect preserved, never stretched), clamped to the 0.25 zoom grid by rounding UP; `maxBounds` + viscosity 1.0 keep the view inside the raster at every zoom; re-fit on boot settle + window resize; `setMinZoom` prevents zoom-out exposing empty space. Center-on-Landing keeps its own behavior (current zoom) | raster 1016x1075 covers 738x350 container on fresh load AND at all 4 viewports (re-fit probe) |
+| P2 | Scenarios card clipped - "Long" entry cut off | card 232px vs content 252px (4 x 44px touch buttons + gaps) | Desktop: compact 38px buttons (specificity-raised rule) -> all four inside 232px. <=1024px: scenario list becomes a 2x2 grid keeping 44px touch targets with all entries visible | 4/4 entries fully inside card bounds on desktop AND all viewports (fullyInside: true x4) |
+| P3 | Still too dark | glass/borders/dim-text too low | Palette lifted to brighter azure/cyan: surfaces rgba(42,62,104,.55), borders rgba(150,195,255,.32), dim text #BCC9E6, map bg #152443, stronger blue atmosphere glow - applied consistently to nav, map frame, cards, rail, controls, dropdowns, dialogs | surface luminance **61** (was 40 -> original ~14); map bg rgb(21,36,67), not near-black |
+
+**Phase 2.2 battery: 23/23 PASS** (fresh-load cover-fit x2, scenario card 4/4 inside + selectable, preset/shortest/reset/center regressions, brightness probes, 4 viewports x raster-covers + scenarios-complete + no-overflow + badge; console 0 errors; network 0 failures).
+
+**Modified in this pass:** `web/js/app.js` (fitMapToGrid/refit/resize wiring + maxBoundsViscosity option fix - the bogus `map.setMaxBoundsViscosity()` call had aborted the whole boot), `web/css/layout.css`, `web/css/tokens.css`, `web/css/components.css`, `web/css/responsive.css`. Datasets, A*, grid contracts: untouched.
+
+
+## 13. Final readiness verdict (updated after Phase 2.2)
 
 ## **READY FOR E2E TESTING**
 

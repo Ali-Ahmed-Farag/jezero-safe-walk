@@ -1,19 +1,19 @@
 :root {
   /* Deep navy / black NOVA base */
-  --bg-0: #0A1020;
-  --bg-1: #0D1424;
-  --bg-2: #111A2E;
+  --bg-0: #0E1730;
+  --bg-1: #122040;
+  --bg-2: #16264A;
 
   /* Glass surfaces */
-  --glass-bg: rgba(28, 40, 68, 0.55);
-  --glass-bg-strong: rgba(30, 42, 70, 0.80);
-  --glass-border: rgba(130, 175, 255, 0.22);
-  --glass-border-strong: rgba(140, 185, 255, 0.38);
-  --glass-glow: 0 0 24px rgba(77, 163, 255, 0.06), inset 0 1px 0 rgba(160, 200, 255, 0.06);
+  --glass-bg: rgba(42, 62, 104, 0.55);
+  --glass-bg-strong: rgba(46, 66, 108, 0.80);
+  --glass-border: rgba(150, 195, 255, 0.32);
+  --glass-border-strong: rgba(160, 200, 255, 0.48);
+  --glass-glow: 0 0 28px rgba(96, 180, 255, 0.10), inset 0 1px 0 rgba(170, 210, 255, 0.10);
 
   /* Electric blue / cyan lighting */
-  --blue: #4DA3FF;
-  --cyan: #7DF3FF;
+  --blue: #5FB0FF;
+  --cyan: #8FF7FF;
   --cyan-soft: rgba(125, 243, 255, 0.12);
   --blue-soft: rgba(77, 163, 255, 0.12);
 
@@ -27,14 +27,14 @@
 
   /* Text */
   --text: #E9F0FF;
-  --text-dim: #A9B7D6;
-  --text-faint: #7E8DB2;
+  --text-dim: #BCC9E6;
+  --text-faint: #93A3CC;
 
   /* Typography */
   --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
   --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "SF Mono", monospace;
-  --map-bg: #0E1526;
+  --map-bg: #152443;
 
   /* Shape */
   --radius-sm: 8px;
