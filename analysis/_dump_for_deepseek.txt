@@ -1,0 +1,415 @@
+﻿
+===== analysis\run_matrix_and_fix.py =====
+
+import json
+import numpy as np
+import subprocess
+import csv
+import math
+
+# Ø¥Ø­Ø¯Ø§Ø«ÙŠØ§Øª Ø§Ù„Ø³ÙŠÙ†Ø§Ø±ÙŠÙˆÙ‡Ø§Øª (Ø¨Ù…Ø§ Ø¥Ù†Ù†Ø§ Ø¹Ù„Ù‰ ÙØ±Ø¹ analysis ÙˆÙ…Ø´ Ø¹Ø§Ù…Ù„ÙŠÙ† Ù…ÙŠØ±Ø¬ØŒ ÙƒØªØ¨ØªÙ‡Ø§Ù„Ùƒ Ù‡Ù†Ø§ Ø¹Ø´Ø§Ù† Ù…ÙŠØ·Ù„Ø¹Ø´ error)
+presets = [
+  {"id": "scenario_1", "title": "Short", "lat": 18.4446, "lon": 77.4509, "end_lat": 18.4520, "end_lon": 77.4430},
+  {"id": "scenario_3", "title": "Medium", "lat": 18.4446, "lon": 77.4509, "end_lat": 18.4700, "end_lon": 77.4250},
+  {"id": "scenario_5", "title": "Advanced", "lat": 18.4446, "lon": 77.4509, "end_lat": 18.4900, "end_lon": 77.4000},
+  {"id": "scenario_8", "title": "Long", "lat": 18.4446, "lon": 77.4509, "end_lat": 18.5200, "end_lon": 77.3800}
+]
+
+lon_min, lon_max = 77.2229331, 77.583964
+lat_min, lat_max = 18.3067994, 18.669315
+width, height = 1016, 1075
+
+def latlon_to_rc(lat, lon):
+    c = int(round((lon - lon_min) / (lon_max - lon_min) * (width - 1)))
+    r = int(round((lat_max - lat) / (lat_max - lat_min) * (height - 1)))
+    return r, c
+
+def rc_to_latlon(r, c):
+    lat = lat_max - (r / (height - 1)) * (lat_max - lat_min)
+    lon = lon_min + (c / (width - 1)) * (lon_max - lon_min)
+    return round(lat, 5), round(lon, 5)
+
+slope_u8 = np.fromfile('web/data/slope_u8.bin', dtype=np.uint8).reshape((height, width))
+slope_deg = slope_u8 / 4.0
+
+def find_nearest_safe(r, c, limit=16.0, preferred=10.0, max_radius=8):
+    if slope_deg[r, c] <= limit:
+        return r, c
+    
+    best_rc = None
+    min_dist = float('inf')
+    
+    for rr in range(max(0, r - max_radius), min(height, r + max_radius + 1)):
+        for cc in range(max(0, c - max_radius), min(width, c + max_radius + 1)):
+            s = slope_deg[rr, cc]
+            if s <= limit:
+                d = math.hypot(rr - r, cc - c)
+                penalty = 0 if s <= preferred else 100 
+                score = d + penalty
+                
+                if score < min_dist:
+                    min_dist = score
+                    best_rc = (rr, cc)
+                    
+    return best_rc if best_rc else (r, c)
+
+print("1. Fixing endpoints (150m search radius)...")
+fixed_presets = []
+for p in presets:
+    sr, sc = latlon_to_rc(p['lat'], p['lon'])
+    er, ec = latlon_to_rc(p['end_lat'], p['end_lon'])
+    
+    ns_r, ns_c = find_nearest_safe(sr, sc)
+    ne_r, ne_c = find_nearest_safe(er, ec)
+    
+    fixed_start = rc_to_latlon(ns_r, ns_c)
+    fixed_end = rc_to_latlon(ne_r, ne_c)
+    
+    fixed_presets.append({
+        "id": p["id"],
+        "title": p["title"],
+        "start": [fixed_start[0], fixed_start[1]],
+        "end": [fixed_end[0], fixed_end[1]]
+    })
+
+with open('analysis/presets_fixed.json', 'w') as f:
+    json.dump(fixed_presets, f, indent=2)
+print("-> Saved analysis/presets_fixed.json")
+
+print("2. Running 24 A* matrix combinations...")
+js_code = f"""
+const fs = require('fs');
+const {{ findRoute }} = require('./web/data/astar.js');
+const slope = new Uint8Array(fs.readFileSync('./web/data/slope_u8.bin'));
+const presets = JSON.parse(fs.readFileSync('./analysis/presets_fixed.json'));
+const profiles = {{ 
+    Conservative: {{safe:6, hard:10, forbidden:10}}, 
+    Standard: {{safe:10, hard:16, forbidden:16}}, 
+    Extended: {{safe:14, hard:20, forbidden:20}} 
+}};
+
+let results = [];
+
+for (let p of presets) {{
+    const sr = Math.round(({lat_max} - p.start[0]) / ({lat_max} - {lat_min}) * 1074);
+    const sc = Math.round((p.start[1] - {lon_min}) / ({lon_max} - {lon_min}) * 1015);
+    const er = Math.round(({lat_max} - p.end[0]) / ({lat_max} - {lat_min}) * 1074);
+    const ec = Math.round((p.end[1] - {lon_min}) / ({lon_max} - {lon_min}) * 1015);
+    
+    for (let [profName, prof] of Object.entries(profiles)) {{
+        for (let mode of ['safest', 'shortest']) {{
+            let t0 = performance.now();
+            let res = findRoute({{ slope, width:1016, height:1075, pixelM:20, start:[sr,sc], end:[er,ec], profile:prof, mode:mode, slopeScale:4 }});
+            let ms = performance.now() - t0;
+            
+            let dist = 0, max_s = 0;
+            if (res.found && res.path.length > 0) {{
+                max_s = slope[res.path[0][0]*1016 + res.path[0][1]]/4.0;
+                for (let i=1; i<res.path.length; i++) {{
+                    dist += Math.hypot((res.path[i][1]-res.path[i-1][1])*20, (res.path[i][0]-res.path[i-1][0])*20);
+                    let s = slope[res.path[i][0]*1016 + res.path[i][1]]/4.0;
+                    if (s > max_s) max_s = s;
+                }}
+            }}
+            results.push({{
+                scenario: p.scenario || p.id,
+                profile: profName,
+                mode: mode,
+                found: res.found,
+                reason: res.reason || '',
+                length_km: (dist/1000).toFixed(2),
+                time_ms: ms.toFixed(2),
+                max_slope: max_s.toFixed(2)
+            }});
+        }}
+    }}
+}}
+console.log(JSON.stringify(results));
+"""
+
+out = subprocess.check_output(['node', '-e', js_code])
+res = json.loads(out)
+
+with open('analysis/scenario_matrix.csv', 'w', newline='') as f:
+    w = csv.DictWriter(f, fieldnames=res[0].keys())
+    w.writeheader()
+    w.writerows(res)
+
+print("-> Saved analysis/scenario_matrix.csv")
+print("Done! Please check the output.")
+
+===== analysis\presets_fixed.json =====
+
+[
+  {
+    "id": "scenario_1",
+    "title": "Short",
+    "start": [
+      18.44451,
+      77.45093
+    ],
+    "end": [
+      18.45194,
+      77.44311
+    ]
+  },
+  {
+    "id": "scenario_3",
+    "title": "Medium",
+    "start": [
+      18.44451,
+      77.45093
+    ],
+    "end": [
+      18.47051,
+      77.42497
+    ]
+  },
+  {
+    "id": "scenario_5",
+    "title": "Advanced",
+    "start": [
+      18.44451,
+      77.45093
+    ],
+    "end": [
+      18.49008,
+      77.40007
+    ]
+  },
+  {
+    "id": "scenario_8",
+    "title": "Long",
+    "start": [
+      18.44451,
+      77.45093
+    ],
+    "end": [
+      18.52012,
+      77.38015
+    ]
+  }
+]
+
+===== web\data\astar.js =====
+
+class MinHeap {
+    constructor() { this.data = []; }
+    push(val, priority) { this.data.push({val, priority}); this.up(this.data.length - 1); }
+    pop() {
+        if (this.data.length === 0) return null;
+        const top = this.data[0];
+        const bottom = this.data.pop();
+        if (this.data.length > 0) { this.data[0] = bottom; this.down(0); }
+        return top.val;
+    }
+    up(i) {
+        while (i > 0) {
+            const p = Math.floor((i - 1) / 2);
+            if (this.data[i].priority >= this.data[p].priority) break;
+            [this.data[i], this.data[p]] = [this.data[p], this.data[i]];
+            i = p;
+        }
+    }
+    down(i) {
+        const l = this.data.length;
+        while (true) {
+            let min = i, left = 2 * i + 1, right = 2 * i + 2;
+            if (left < l && this.data[left].priority < this.data[min].priority) min = left;
+            if (right < l && this.data[right].priority < this.data[min].priority) min = right;
+            if (min === i) break;
+            [this.data[i], this.data[min]] = [this.data[min], this.data[i]];
+            i = min;
+        }
+    }
+    isEmpty() { return this.data.length === 0; }
+}
+
+function findRoute({ slope, width, height, pixelM, start, end, profile, mode, slopeScale }) {
+    const [sr, sc] = start;
+    const [er, ec] = end;
+
+    const startSlope = slope[sr * width + sc] / slopeScale;
+    const endSlope = slope[er * width + ec] / slopeScale;
+
+    // 1. Ø§Ù„ØªØ­Ù‚Ù‚ Ù…Ù† Ù†Ù‚Ø·Ø© Ø§Ù„Ø¨Ø¯Ø§ÙŠØ© ÙˆØ§Ù„Ù†Ù‡Ø§ÙŠØ©
+    if (startSlope > profile.forbidden) {
+        return { found: false, reason: 'start_forbidden', slope: startSlope, path: [] };
+    }
+    if (endSlope > profile.forbidden) {
+        return { found: false, reason: 'end_forbidden', slope: endSlope, path: [] };
+    }
+
+    const openSet = new MinHeap();
+    const gScore = new Float32Array(width * height).fill(Infinity);
+    const cameFrom = new Int32Array(width * height).fill(-1);
+
+    const startIdx = sr * width + sc;
+    const endIdx = er * width + ec;
+
+    gScore[startIdx] = 0;
+    openSet.push(startIdx, 0);
+
+    // Ø§Ù„Ù…Ø³Ø§ÙØ§Øª: 1 Ù„Ù„Ù…Ø³ØªÙ‚ÙŠÙ…ØŒ Ùˆ 1.4142 (Ø¬Ø°Ø± 2) Ù„Ù„Ù‚Ø·Ø±ÙŠ
+    const dirs = [
+        [-1, 0, 1], [1, 0, 1], [0, -1, 1], [0, 1, 1],
+        [-1, -1, 1.4142], [-1, 1, 1.4142], [1, -1, 1.4142], [1, 1, 1.4142]
+    ];
+
+    while (!openSet.isEmpty()) {
+        const currentIdx = openSet.pop();
+        
+        if (currentIdx === endIdx) {
+            const path = [];
+            let curr = currentIdx;
+            while (curr !== -1) {
+                path.push([Math.floor(curr / width), curr % width]);
+                curr = cameFrom[curr];
+            }
+            return { found: true, path: path.reverse() };
+        }
+
+        const r = Math.floor(currentIdx / width);
+        const c = currentIdx % width;
+        const currentSlope = slope[currentIdx] / slopeScale;
+
+        for (let i = 0; i < dirs.length; i++) {
+            const nr = r + dirs[i][0];
+            const nc = c + dirs[i][1];
+            if (nr < 0 || nr >= height || nc < 0 || nc >= width) continue;
+
+            const nIdx = nr * width + nc;
+            const neighborSlope = slope[nIdx] / slopeScale;
+            const s_avg = (currentSlope + neighborSlope) / 2.0;
+
+            // Ù…Ù†Ø¹ Ø§Ù„Ø¹Ø¨ÙˆØ± Ù„Ùˆ Ø§Ù„Ù…ØªÙˆØ³Ø· Ø£ÙƒØ¨Ø± Ù…Ù† Ø§Ù„Ù€ forbidden
+            if (s_avg > profile.forbidden) continue;
+
+            const dist = dirs[i][2] * pixelM;
+            
+            // Ù…Ø¹Ø§Ø¯Ù„Ø© Ø§Ù„ØªÙƒÙ„ÙØ© Ø­Ø³Ø¨ Ø§Ù„Ù…ÙˆØ¯ (Ø§Ù„Ø¨Ù†Ø¯ 2)
+            const cost = mode === 'shortest' 
+                ? dist 
+                : dist * (1 + Math.pow(s_avg / profile.safe, 2));
+
+            const tentativeG = gScore[currentIdx] + cost;
+
+            if (tentativeG < gScore[nIdx]) {
+                cameFrom[nIdx] = currentIdx;
+                gScore[nIdx] = tentativeG;
+                
+                const h = Math.hypot((nr - er) * pixelM, (nc - ec) * pixelM);
+                openSet.push(nIdx, tentativeG + h);
+            }
+        }
+    }
+
+    return { found: false, reason: 'no_path', path: [] };
+}
+
+if (typeof module !== 'undefined') module.exports = { findRoute };
+
+===== analysis\test_astar.js =====
+
+const fs = require("fs");
+const path = require("path");
+const { performance } = require("perf_hooks");
+const { findRoute } = require("../web/data/astar.js");
+
+const slopePath = path.join("web", "data", "slope_u8.bin");
+const projectedPath = path.join("analysis", "projected_points.json");
+const outPath = path.join("analysis", "astar_test_results.json");
+
+const slopeBuf = fs.readFileSync(slopePath);
+const slope = new Uint8Array(slopeBuf.buffer, slopeBuf.byteOffset, slopeBuf.byteLength);
+
+const projected = JSON.parse(fs.readFileSync(projectedPath, "utf-8"));
+const width = projected.grid_width;
+const height = projected.grid_height;
+const pixelM = projected.pixel_size_m;
+const slopeScale = 4;
+
+const landing = projected.targets[0];
+const destinations = projected.targets.slice(1);
+
+function evaluatePath(routePath) {
+  if (!routePath || routePath.length === 0) return null;
+  let distM = 0;
+  let maxSlope = 0;
+  let sumSlope = 0;
+  let over10Count = 0;
+
+  for (let i = 0; i < routePath.length; i++) {
+    const [r, c] = routePath[i];
+    const deg = slope[r * width + c] / slopeScale;
+    if (deg > maxSlope) maxSlope = deg;
+    sumSlope += deg;
+    if (deg > 10.0) over10Count++;
+
+    if (i > 0) {
+      const [pr, pc] = routePath[i - 1];
+      distM += Math.hypot((c - pc) * pixelM, (r - pr) * pixelM);
+    }
+  }
+
+  return {
+    waypoints: routePath.length,
+    distance_m: Number(distM.toFixed(2)),
+    max_slope_deg: Number(maxSlope.toFixed(2)),
+    mean_slope_deg: Number((sumSlope / routePath.length).toFixed(2)),
+    pct_steps_over_10deg: Number(((over10Count / routePath.length) * 100).toFixed(2)),
+  };
+}
+
+const scenarios = [
+  { label: "Astronaut EVA (safest)", profile: { safe: 10, hard: 15, forbidden: 15 }, mode: "safest" },
+  { label: "Astronaut EVA (shortest)", profile: { safe: 10, hard: 15, forbidden: 15 }, mode: "shortest" },
+  { label: "Rover Max Slope (safest)", profile: { safe: 15, hard: 25, forbidden: 25 }, mode: "safest" },
+];
+
+const results = [];
+
+for (const dest of destinations) {
+  for (const sc of scenarios) {
+    const t0 = performance.now();
+    const res = findRoute({
+      slope,
+      width,
+      height,
+      pixelM,
+      start: [landing.row, landing.col],
+      end: [dest.row, dest.col],
+      profile: sc.profile,
+      mode: sc.mode,
+      slopeScale,
+    });
+    const elapsedMs = Number((performance.now() - t0).toFixed(2));
+    const metrics = evaluatePath(res.path);
+
+    results.push({
+      from: landing.name,
+      to: dest.name,
+      scenario: sc.label,
+      found: res.found,
+      runtime_ms: elapsedMs,
+      under_1s_target: elapsedMs < 1000,
+      metrics,
+      path: res.path,
+    });
+  }
+}
+
+fs.writeFileSync(outPath, JSON.stringify({ width, height, pixelM, runs: results }, null, 2));
+
+console.table(
+  results.map((r) => ({
+    Destination: r.to,
+    Scenario: r.scenario,
+    Found: r.found,
+    "Time (ms)": r.runtime_ms,
+    "Dist (m)": r.metrics?.distance_m,
+    "Max Slope (Â°)": r.metrics?.max_slope_deg,
+    "Mean Slope (Â°)": r.metrics?.mean_slope_deg,
+    ">10Â° Steps (%)": r.metrics?.pct_steps_over_10deg,
+  }))
+);

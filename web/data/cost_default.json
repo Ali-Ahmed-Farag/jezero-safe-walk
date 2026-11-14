@@ -1,0 +1,15 @@
+{
+  "default_profile": "Standard",
+  "default_mode": "safest",
+  "default_walking_speed_kmh": 2.0,
+  "cost_formula": {
+    "safest": "d * (1 + (s_avg / safe)^2)",
+    "shortest": "d",
+    "rejection_rule": "s_avg > forbidden"
+  },
+  "profiles": {
+    "Conservative": { "safe": 6.0, "hard": 10.0, "forbidden": 10.0 },
+    "Standard": { "safe": 10.0, "hard": 16.0, "forbidden": 16.0 },
+    "Extended": { "safe": 14.0, "hard": 20.0, "forbidden": 20.0 }
+  }
+}

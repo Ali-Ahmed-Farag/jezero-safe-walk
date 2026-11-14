@@ -1,0 +1,23 @@
+{
+  "source_dem": "data\\processed\\dem_20m_crop.tif",
+  "output_bin": "web\\data\\slope_u8.bin",
+  "width": 1016,
+  "height": 1075,
+  "total_pixels": 1092200,
+  "pixel_size_m": {
+    "x": 20.0,
+    "y": 20.0
+  },
+  "slope_scale": 4,
+  "file_size_bytes": 1092200,
+  "slope_deg_min": 0.0006,
+  "slope_deg_max": 39.7156,
+  "slope_deg_mean": 5.5145,
+  "slope_deg_median": 3.7477,
+  "slope_deg_p90": 12.841,
+  "slope_deg_p95": 16.4362,
+  "slope_deg_p99": 22.9279,
+  "pct_under_10deg": 83.9,
+  "pct_under_16deg": 94.55,
+  "pct_over_25deg": 0.49
+}
