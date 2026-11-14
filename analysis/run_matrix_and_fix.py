@@ -5,94 +5,62 @@ import csv
 import math
 import os
 
-# إحداثيات السيناريوهات الأصلية
-presets = [
-  {"id": "scenario_1", "title": "Short", "lat": 18.4446, "lon": 77.4509, "end_lat": 18.4520, "end_lon": 77.4430},
-  {"id": "scenario_3", "title": "Medium", "lat": 18.4446, "lon": 77.4509, "end_lat": 18.4700, "end_lon": 77.4250},
-  {"id": "scenario_5", "title": "Advanced", "lat": 18.4446, "lon": 77.4509, "end_lat": 18.4900, "end_lon": 77.4000},
-  {"id": "scenario_8", "title": "Long", "lat": 18.4446, "lon": 77.4509, "end_lat": 18.5200, "end_lon": 77.3800}
-]
+# B3 (canonical presets integration): presets come from DE2's web/data/presets.json and
+# every coordinate conversion uses DE1's web/data/grid_meta.json contract.
+# No hardcoded bounds, no (W-1)/(H-1) scaling, no endpoint snapping, and NO
+# presets_fixed.json output — the pre-canonical fixture is retired from this workflow
+# (the committed file stays untouched for history; nothing here reads or writes it).
 
-lon_min, lon_max = 77.2229331, 77.583964
-lat_min, lat_max = 18.3067994, 18.669315
-width, height = 1016, 1075
+with open('web/data/grid_meta.json', encoding='utf-8') as f:
+    meta = json.load(f)
+with open('web/data/presets.json', encoding='utf-8') as f:
+    presets = json.load(f)
+
+assert meta.get('bounds_are') == 'outer_corners', 'non-canonical grid contract'
+bounds = meta['bounds']
+width, height = meta['width'], meta['height']
+deg_x = (bounds['lon_max'] - bounds['lon_min']) / width
+deg_y = (bounds['lat_max'] - bounds['lat_min']) / height
 
 def latlon_to_rc(lat, lon):
-    c = int(round((lon - lon_min) / (lon_max - lon_min) * (width - 1)))
-    r = int(round((lat_max - lat) / (lat_max - lat_min) * (height - 1)))
+    # grid_meta.notes contract: floor-based mapping over the half-open domain
+    # [lon_min, lon_max) x (lat_min, lat_max]; row 0 = north, col 0 = west.
+    c = math.floor((lon - bounds['lon_min']) / deg_x)
+    r = math.floor((bounds['lat_max'] - lat) / deg_y)
+    if not (0 <= r < height and 0 <= c < width):
+        raise ValueError(f'lat/lon outside grid: ({lat}, {lon}) -> row={r}, col={c}')
     return r, c
 
-def rc_to_latlon(r, c):
-    lat = lat_max - (r / (height - 1)) * (lat_max - lat_min)
-    lon = lon_min + (c / (width - 1)) * (lon_max - lon_min)
-    return round(lat, 5), round(lon, 5)
-
 slope_u8 = np.fromfile('web/data/slope_u8.bin', dtype=np.uint8).reshape((height, width))
-slope_deg = slope_u8 / 4.0
+slope_deg = slope_u8.astype(np.float64) / 4.0
 
-def find_nearest_safe(r, c, limit=16.0, preferred=10.0, max_radius=8):
-    if slope_deg[r, c] <= limit:
-        return r, c
-    
-    best_rc = None
-    min_dist = float('inf')
-    
-    for rr in range(max(0, r - max_radius), min(height, r + max_radius + 1)):
-        for cc in range(max(0, c - max_radius), min(width, c + max_radius + 1)):
-            s = slope_deg[rr, cc]
-            if s <= limit:
-                d = math.hypot(rr - r, cc - c)
-                penalty = 0 if s <= preferred else 100 
-                score = d + penalty
-                
-                if score < min_dist:
-                    min_dist = score
-                    best_rc = (rr, cc)
-                    
-    return best_rc if best_rc else (r, c)
+# Write the CSV header BEFORE any preset validation, so a validation failure can never
+# leave a stale previous-run CSV in place (B3 review note: the header-only file makes an
+# aborted run obviously incomplete instead of misleadingly fresh).
+csv_file = 'analysis/scenario_matrix.csv'
+with open(csv_file, 'w', newline='') as f:
+    w = csv.writer(f)
+    w.writerow(['scenario', 'profile', 'mode', 'found', 'reason', 'length_km', 'time_ms', 'max_slope'])
 
-print("1. Fixing endpoints...")
-fixed_presets = []
+print("1. Canonical sources loaded (no fixture generation, no endpoint edits).")
 for p in presets:
-    sr, sc = latlon_to_rc(p['lat'], p['lon'])
-    er, ec = latlon_to_rc(p['end_lat'], p['end_lon'])
-    
-    ns_r, ns_c = find_nearest_safe(sr, sc)
-    ne_r, ne_c = find_nearest_safe(er, ec)
-    
-    fixed_start = rc_to_latlon(ns_r, ns_c)
-    fixed_end = rc_to_latlon(ne_r, ne_c)
-    
-    fixed_presets.append({
-        "id": p["id"],
-        "title": p["title"],
-        "start": [fixed_start[0], fixed_start[1]],
-        "end": [fixed_end[0], fixed_end[1]]
-    })
-
-with open('analysis/presets_fixed.json', 'w') as f:
-    json.dump(fixed_presets, f, indent=2)
-print("-> Saved analysis/presets_fixed.json")
+    sr, sc = latlon_to_rc(p['start'][0], p['start'][1])
+    er, ec = latlon_to_rc(p['end'][0], p['end'][1])
+    print(f"   {p['id']}: start=({sr},{sc}) end=({er},{ec}) "
+          f"rover_distance_km={p['rover_distance_km']}")
 
 print("\n2. Running 24 A* matrix combinations (separate processes)...")
 
 profiles = ['Conservative', 'Standard', 'Extended']
 modes = ['safest', 'shortest']
-scenarios = [p['id'] for p in fixed_presets]
-
-csv_file = 'analysis/scenario_matrix.csv'
-
-# Create CSV and write header
-with open(csv_file, 'w', newline='') as f:
-    w = csv.writer(f)
-    w.writerow(['scenario', 'profile', 'mode', 'found', 'reason', 'length_km', 'time_ms', 'max_slope'])
+scenarios = [p['id'] for p in presets]
 
 for scen in scenarios:
     for prof in profiles:
         for mode in modes:
             cmd = ['node', 'analysis/run_one.js', scen, prof, mode]
             result = subprocess.run(cmd, capture_output=True, text=True)
-            
+
             if result.returncode != 0:
                 print(f"ERROR running {scen} {prof} {mode}: {result.stderr}")
                 row = [scen, prof, mode, False, 'process_error', '0', '0', '0']
@@ -103,10 +71,10 @@ for scen in scenarios:
                 except json.JSONDecodeError:
                     print(f"Failed to parse JSON for {scen} {prof} {mode}: {result.stdout}")
                     row = [scen, prof, mode, False, 'json_error', '0', '0', '0']
-            
+
             # Print immediately
             print(f"[{scen}] {prof:12} {mode:8} | found={row[3]:5} | dist={row[5]:>6}km | time={row[6]:>7}ms | max_slope={row[7]:>5}° | reason={row[4]}")
-            
+
             # Write and flush immediately
             with open(csv_file, 'a', newline='') as f:
                 w = csv.writer(f)
@@ -116,9 +84,9 @@ for scen in scenarios:
 
 print(f"\n-> Saved {csv_file}")
 
-# Step 3: Verify scenario_3 end slope <= 16
+# Step 3: Verify scenario_3 end slope <= 16 (informational check on the canonical endpoint)
 print("\n3. Verifying scenario_3 end slope...")
-scen3 = [p for p in fixed_presets if p['id'] == 'scenario_3'][0]
+scen3 = next(p for p in presets if p['id'] == 'scenario_3')
 er, ec = latlon_to_rc(scen3['end'][0], scen3['end'][1])
 end_slope = slope_deg[er, ec]
 print(f"scenario_3 end slope is {end_slope:.2f}° (Target: <= 16.0°)")

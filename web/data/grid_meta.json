@@ -1,0 +1,50 @@
+{
+  "width": 1016,
+  "height": 1075,
+  "bounds": {
+    "lon_min": 77.22261321142493,
+    "lon_max": 77.58403338261662,
+    "lat_min": 18.30663074363803,
+    "lat_max": 18.669348748087508
+  },
+  "requested_frame": {
+    "lon_min": 77.2229,
+    "lon_max": 77.584,
+    "lat_min": 18.3068,
+    "lat_max": 18.6693
+  },
+  "bounds_are": "outer_corners",
+  "pixel_size_m": {
+    "x": 19.99606821438402,
+    "y": 20.0
+  },
+  "pixel_size_projected_m": {
+    "x": 20.0,
+    "y": 20.0
+  },
+  "ground_ref_lat": 18.5,
+  "pixel_m": 19.99803401056415,
+  "elev_scale": 10,
+  "slope_scale": 4,
+  "nodata_elev": -32768,
+  "nodata_elev_dem": -3.4028234663852886e+38,
+  "slope_edge_value": 255,
+  "row0": "north",
+  "col0": "west",
+  "layout": "row_major",
+  "crs": "+proj=eqc +lat_ts=18.4663 +lat_0=0 +lon_0=0 +x_0=0 +y_0=0 +R=3396190 +units=m",
+  "elev_range_m": [
+    -2683.66162109375,
+    -1650.4349365234375
+  ],
+  "provenance": {
+    "dem_file": "data/processed/dem_20m_crop.tif",
+    "dem_sha256": "b746795363c0baad02696e9c3711591c523ec88c873ae28a0f8faded122041ae",
+    "source_dem": "data/raw/M20_JezeroCrater_CTXDEM_20m.tif",
+    "source_dem_sha256": "ba7f706ea1b5d63a562f28a7dcf7a7f3c79bce7f048e6974b57e8a33c30d1ba2",
+    "source_col0": 633,
+    "source_row0": 1840,
+    "snap_rule": "outward_pixel_snapping"
+  },
+  "notes": "Jezero Safe Walk shared grid contract (DE1). All processed grids (dem_20m_crop.tif, elev_dm_i16.bin, slope_u8.bin, ctx_basemap.jpg, hillshade.png) share width, height and bounds exactly. Indexing: row 0 = north, col 0 = west, row-major; index = row*width + col. bounds are outer-corner coordinates of the edge pixels. (lat,lon) -> (row,col), exactly linear: col = floor((lon - bounds.lon_min) / deg_per_px_x); row = floor((bounds.lat_max - lat) / deg_per_px_y); deg_per_px_x = (bounds.lon_max - bounds.lon_min)/width; deg_per_px_y = (bounds.lat_max - bounds.lat_min)/height. Pixel-center decode: lon = bounds.lon_min + (col+0.5)*deg_per_px_x; lat = bounds.lat_max - (row+0.5)*deg_per_px_y. Decode domain is half-open: [lon_min, lon_max) x (lat_min, lat_max]; points exactly on the east/south outer edge yield col == width / row == height and are outside the grid - always range-check 0 <= col < width and 0 <= row < height. elev_dm_i16.bin decode: elev_m = int16_le/elev_scale (10 = decimeters); nodata_elev = -32768. slope_u8.bin decode: slope_deg = byte/slope_scale (4); byte 255 marks edges/unknown -> forbidden (63.75 deg), not NoData. pixel_size_m = GROUND meters at ground_ref_lat 18.5 (slope dx/dy per PLAN 5.3, distances per 5.6); pixel_size_projected_m = CRS grid units (20 m). pixel_m (single scalar for astar.js, PLAN 5.5) = sqrt(pixel_size_m.x * pixel_size_m.y); diagonal step = pixel_m * sqrt(2) (= sqrt(x^2+y^2) to <1e-6 m). requested_frame (PLAN 5.1 four-decimal AOI) lies fully inside bounds (outward pixel snap). Vertical reference: elevations as stored in the source DEM product (docs/sources.md); reconciliation with the rover-track Site frame is Data Scientist scope (PLAN 5.7)."
+}

@@ -1,25 +1,27 @@
 const fs = require('fs');
 const { findRoute } = require('../web/data/astar.js');
 const { pathMetrics } = require('../web/data/metrics.js');
+const { loadMeta, latLonToRowCol, pixelM } = require('./grid_contract.js');
+// B3: canonical presets (web/data/presets.json) + canonical grid contract — no fixtures.
+// Tests ALL canonical scenarios; rover_distance_km is echoed unchanged for verification.
 const slope = new Uint8Array(fs.readFileSync('./web/data/slope_u8.bin'));
 const elev = new Int16Array(fs.readFileSync('./web/data/elev_dm_i16.bin').buffer);
-const presets = JSON.parse(fs.readFileSync('./analysis/presets_fixed.json'));
+const presets = JSON.parse(fs.readFileSync('./web/data/presets.json', 'utf8'));
 const profiles = { Standard: {safe:10, hard:16, forbidden:16} };
 
-const test_ids = ['scenario_1', 'scenario_3', 'scenario_5'];
+const meta = loadMeta();
 const results = [];
 
-for (let id of test_ids) {
-    const p = presets.find(x => x.id === id);
-    const sr = Math.round((18.669315 - p.start[0]) / (18.669315 - 18.3067994) * 1074);
-    const sc = Math.round((p.start[1] - 77.2229331) / (77.583964 - 77.2229331) * 1015);
-    const er = Math.round((18.669315 - p.end[0]) / (18.669315 - 18.3067994) * 1074);
-    const ec = Math.round((p.end[1] - 77.2229331) / (77.583964 - 77.2229331) * 1015);
-    
-    const res = findRoute({ slope, width:1016, height:1075, pixelM:20, start:[sr,sc], end:[er,ec], profile:profiles.Standard, mode:'safest', slopeScale:4 });
+for (let p of presets) {
+    const s = latLonToRowCol(p.start[0], p.start[1]);
+    const e = latLonToRowCol(p.end[0], p.end[1]);
+
+    const res = findRoute({ slope, width: meta.width, height: meta.height, pixelM: pixelM(), start: [s.row, s.col], end: [e.row, e.col], profile: profiles.Standard, mode: 'safest', slopeScale: 4 });
     if (res.found) {
-        const metrics = pathMetrics({ path: res.path, slope, elev, width:1016, pixelM:20, profile:profiles.Standard, speedKmh:2 });
-        results.push({ id, ...metrics });
+        const metrics = pathMetrics({ path: res.path, slope, elev, width: meta.width, pixelM: pixelM(), profile: profiles.Standard, speedKmh: 2 });
+        results.push({ id: p.id, rover_distance_km: p.rover_distance_km, ...metrics });
+    } else {
+        results.push({ id: p.id, rover_distance_km: p.rover_distance_km, found: false, reason: res.reason || '' });
     }
 }
 console.log(JSON.stringify(results, null, 2));
