@@ -69,8 +69,16 @@ export function addScienceTargets(map, geojsonData) {
     },
     onEachFeature: function (feature, layer) {
       if (feature.properties && feature.properties.name) {
-        let popupContent = `<b>${feature.properties.name}</b>`;
-        if (feature.properties.description) popupContent += `<br>${feature.properties.description}`;
+        const p = feature.properties;
+        let popupContent = `<div style="max-width:280px;line-height:1.4;"><b>${p.name}</b>`;
+        if (p.representative) popupContent += ` <span style="font-size:11px;background:#30363d;padding:1px 5px;border-radius:4px;">Representative${p.rover_sol ? ' (Sol ' + p.rover_sol + ')' : ''}</span>`;
+        if (p.description) popupContent += `<div style="margin-top:4px;font-size:12px;">${p.description}</div>`;
+        if (p.source) {
+          const srcHtml = p.source_url ? `<a href="${p.source_url}" target="_blank" rel="noopener">${p.source}</a>` : p.source;
+          popupContent += `<div style="margin-top:6px;padding-top:4px;border-top:1px solid #444;font-size:11px;color:#aaa;"><b>Source:</b> ${srcHtml}</div>`;
+        }
+        if (p.coordinate_source) popupContent += `<div style="margin-top:3px;font-size:11px;color:#aaa;"><b>Coords:</b> ${p.coordinate_source}</div>`;
+        popupContent += `</div>`;
         layer.bindPopup(popupContent);
       }
     }
