@@ -399,6 +399,7 @@ async function setupValidation() {
     const valData = await loadJSON('./data/validation_results.json');
     const m = valData.metrics;
     
+    // Fill basic metrics
     document.getElementById('val-pitch-r').textContent = m.pitch.correlation_r.toFixed(3);
     document.getElementById('val-pitch-rmse').textContent = m.pitch.rmse_deg.toFixed(2);
     document.getElementById('val-roll-r').textContent = m.roll.correlation_r.toFixed(3);
@@ -406,8 +407,28 @@ async function setupValidation() {
     document.getElementById('val-elev-bias').textContent = m.elevation.mean_bias_m.toFixed(2);
     document.getElementById('val-interpretation').textContent = valData.summary.scientific_interpretation;
 
+    // Fill Rover Replay Data
+    const rr = valData.rover_replay;
+    if (rr) {
+      document.getElementById('rr-actual-dist').textContent = rr.actual_rover_distance_m.toFixed(1);
+      document.getElementById('rr-actual-mean').textContent = rr.actual_mean_dem_slope_deg.toFixed(2);
+      document.getElementById('rr-actual-max').textContent = rr.actual_max_dem_slope_deg.toFixed(2);
+
+      document.getElementById('rr-safest-dist').textContent = rr.safest_astar.distance_m.toFixed(1);
+      document.getElementById('rr-safest-mean').textContent = rr.safest_astar.mean_dem_slope_deg.toFixed(2);
+      document.getElementById('rr-safest-max').textContent = rr.safest_astar.max_dem_slope_deg.toFixed(2);
+      document.getElementById('rr-safest-pct').textContent = rr.safest_astar.pct_within_100m.toFixed(1) + '%';
+
+      document.getElementById('rr-shortest-dist').textContent = rr.baseline_shortest.distance_m.toFixed(1);
+      document.getElementById('rr-shortest-mean').textContent = rr.baseline_shortest.mean_dem_slope_deg.toFixed(2);
+      document.getElementById('rr-shortest-max').textContent = rr.baseline_shortest.max_dem_slope_deg.toFixed(2);
+      document.getElementById('rr-shortest-pct').textContent = rr.baseline_shortest.pct_within_100m.toFixed(1) + '%';
+    }
+
+    // Fill Bins Table
     const tbody = document.getElementById('val-bins-body');
     if (valData.slope_bins && tbody) {
+      tbody.innerHTML = ''; // Clear existing
       valData.slope_bins.forEach(b => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -421,7 +442,7 @@ async function setupValidation() {
       });
     }
 
-    if (valData.sample) state.validationSample = valData.sample;
+    if (valData.samples) state.validationSample = valData.samples; // Updated to 'samples' based on file output
 
     document.getElementById('btn-validation').addEventListener('click', () => {
       document.getElementById('validation-modal').style.display = 'flex';
