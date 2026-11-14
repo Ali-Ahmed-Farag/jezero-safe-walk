@@ -1,0 +1,30 @@
+[
+  {
+    "id": "scenario_1",
+    "title": "Short",
+    "start": [18.444627, 77.450886],
+    "end": [18.436936, 77.450968],
+    "rover_distance_km": 1.002
+  },
+  {
+    "id": "scenario_3",
+    "title": "Medium",
+    "start": [18.444627, 77.450886],
+    "end": [18.430986, 77.441860],
+    "rover_distance_km": 3.001
+  },
+  {
+    "id": "scenario_5",
+    "title": "Advanced",
+    "start": [18.444627, 77.450886],
+    "end": [18.446462, 77.451618],
+    "rover_distance_km": 5.001
+  },
+  {
+    "id": "scenario_8",
+    "title": "Long",
+    "start": [18.444627, 77.450886],
+    "end": [18.463672, 77.438633],
+    "rover_distance_km": 8.003
+  }
+]
