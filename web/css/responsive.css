@@ -23,7 +23,7 @@
 @media (max-width: 1024px) {
   body { overflow-y: auto; }
 
-  .nova { padding: 4px var(--space-3) var(--space-4); gap: 10px; }
+  .nova { flex: none; padding: 4px var(--space-3) var(--space-4); gap: 10px; }
 
   /* Stack: hero (compact) -> map -> Mission Brief -> cards -> layers */
   .row-top {
@@ -46,10 +46,15 @@
     border-radius: var(--radius-lg);
   }
 
+  /* Landscape phones: 52vh of a 390px-tall viewport is too cramped for map use */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .map-stage { min-height: 78vh; }
+  }
+
   .stats-rail { order: -1; border-radius: var(--radius-lg); }
   .rail-stats { flex-direction: row; flex-wrap: wrap; gap: var(--space-4); padding-top: 4px; }
 
-  .row-cards { grid-template-columns: 1fr 1fr; }
+  .row-cards { grid-template-columns: 1fr 1fr; grid-auto-rows: max-content; }
 
   .layers-strip-body { grid-template-columns: 1fr 1fr; }
 
@@ -68,6 +73,9 @@
     flex-wrap: wrap;
     gap: var(--space-2);
     padding: var(--space-2) var(--space-3);
+    padding-left: max(var(--space-3), env(safe-area-inset-left));
+    padding-right: max(var(--space-3), env(safe-area-inset-right));
+    padding-top: max(var(--space-2), env(safe-area-inset-top));
   }
   .nav-brand { order: 0; }
   .nav-right { order: 1; margin-left: auto; }
@@ -87,7 +95,7 @@
 }
 
 @media (max-width: 640px) {
-  .row-cards { grid-template-columns: 1fr; }
+  .row-cards { grid-template-columns: 1fr; grid-auto-rows: max-content; }
   .layers-strip-body { grid-template-columns: 1fr; }
   .hero-title { font-size: clamp(30px, 9vw, 40px); }
   .rail-num { font-size: 24px; }
