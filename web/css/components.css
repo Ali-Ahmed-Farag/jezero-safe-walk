@@ -114,16 +114,13 @@ body {
   gap: 14px;
   padding: 6px var(--space-5) var(--space-5);
   flex: 1;
-  min-height: 0;
 }
 
 .row-top {
   display: grid;
   grid-template-columns: minmax(300px, 370px) 1fr minmax(215px, 235px);
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: minmax(500px, auto);
   gap: 14px;
-  flex: 1;
-  min-height: 0;
 }
 
 .row-cards {
@@ -217,7 +214,7 @@ body {
   overflow: hidden;
   border: 1px solid var(--border-strong);
   box-shadow: 0 10px 34px rgba(11, 27, 51, 0.14), 0 0 0 4px rgba(128, 232, 250, 0.25);
-  min-height: 460px;
+  min-height: 480px;
   background: var(--map-bg);
 }
 .map-stage #map {
@@ -236,7 +233,6 @@ body {
   padding: var(--space-4);
   border-radius: var(--radius-lg);
   overflow-y: auto;
-  min-height: 0;
 }
 .rail-title { font-size: 10px; font-weight: 700; letter-spacing: 2px; color: var(--text-faint); }
 .rail-item { padding: 6px 2px; }
