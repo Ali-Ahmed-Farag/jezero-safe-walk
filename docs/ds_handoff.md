@@ -30,3 +30,22 @@
   "Standard": { "safe": 10, "hard": 16, "forbidden": 16 },
   "Extended": { "safe": 14, "hard": 20, "forbidden": 20 }
 }
+
+## 4. B15 - Rover projection evidence (restored 2026-11-14)
+
+`analysis/projected_points.json` was regenerated with the full 32,003-point rover track
+(the previous regeneration at ef753b8 ran without the track CSV present and embedded 0 track points).
+
+- **Command (reproducible):** `python analysis/project_targets.py` (run from the repo root; requires the
+  track-owner inputs below to be present as untracked working files - they are NOT committed on DS).
+- **Inputs (owner, sha256):**
+  - `data/processed/rover_track_clean.csv` (DE2-owned, untracked on DS): `71c1b04e9f461107167fe2b414a7aa05f334a15a9d2c299d6f276f26fe35dbdd`
+  - `data/processed/dem_20m_crop.tif` (DE1 deliverable, git blob `b746795363c0baad02696e9c3711591c523ec88c873ae28a0f8faded122041ae` content)
+  - `web/data/science_targets.geojson` (DE2 canonical, git blob `f6b0c40486b0`)
+  - `web/data/grid_meta.json` (DE1 canonical, git blob `2d908027b01b41955ee92f978de6c5bc7bfe073f`)
+- **Output:** `analysis/projected_points.json`, sha256 `0bd4311b61b406c081385183aac3bd1081d501c9b90df6c6e3541ecbf020ded1` (10,028,057 bytes)
+- **Results:** `rover_track_count = 32003`, `rover_track_in_bounds = 32003/32003` (all points inside the DE1
+  outer-corner grid bounds); 3 science targets all `in_bounds = true`; landing point = (row 666, col 641) which
+  matches the canonical floor-based grid contract exactly.
+- **Spot-check:** 5 sample points (sols 0, 130, 340, 380, 1815) re-derived independently from lon/lat via the
+  `grid_meta.notes` floor formula - all match the file's row/col exactly.
