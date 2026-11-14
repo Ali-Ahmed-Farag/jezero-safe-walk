@@ -240,7 +240,7 @@ body {
   inset: 0;
   width: 100%;
   height: 100%;
-  background: #05070C;
+  background: var(--map-bg);
 }
 
 /* ===== Stats rail (Mission Brief) ===== */
@@ -477,7 +477,7 @@ body {
   position: absolute;
   top: calc(100% + 8px);
   left: 76px;
-  z-index: 1400;
+  z-index: 2500;
   display: flex;
   flex-direction: column;
   min-width: 250px;

@@ -103,7 +103,8 @@ async function boot() {
     state.slope = await loadSlope('./data/slope_u8.bin', expectedCells);
 
     const mapBounds = [[0, 0], [state.meta.height, state.meta.width]];
-    map.setView([state.meta.height / 2, state.meta.width / 2], 1);
+    // Fit the whole Jezero grid inside the frame (no empty letterbox areas)
+    map.fitBounds(mapBounds);
 
     // Add CTX Basemap
     try {
@@ -145,6 +146,8 @@ async function boot() {
     setupOpacityReadouts();
     setupHeroActions();
     setupMiniCards();
+    // Correct Leaflet sizing after the full NOVA layout settles
+    setTimeout(() => { map.invalidateSize(); map.fitBounds(mapBounds); }, 250);
     
     document.getElementById('input-speed').addEventListener('input', (e) => {
       state.speedKmh = parseFloat(e.target.value) || 2;
@@ -486,7 +489,7 @@ function setupMapToolbar() {
   document.getElementById('btn-center-landing').addEventListener('click', () => {
     if (!state.meta) return;
     const rc = latLonToRowCol(18.444627, 77.450886, state.meta); // Octavia E. Butler Landing
-    map.setView([Math.floor(rc.row), Math.floor(rc.col)], Math.max(map.getZoom(), 1));
+    map.setView([Math.floor(rc.row), Math.floor(rc.col)], map.getZoom());
   });
 
   // Route mode switch — exposes the two modes the router already supports (no algorithm change)

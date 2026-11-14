@@ -98,3 +98,15 @@
   .thermal-mini { flex-direction: column; }
   .validation-mini { flex-direction: column; }
 }
+
+/* Desktop: single-viewport NOVA dashboard - everything fits without page scroll */
+@media (min-width: 1025px) {
+  body { height: 100vh; overflow: hidden; }
+  .nova { flex: 1; min-height: 0; }
+  .row-top { flex: 5 1 0; min-height: 0; }
+  .row-cards { flex: 2 1 0; min-height: 0; }
+  .card { min-height: 0; }
+  .stats-rail { min-height: 0; }
+  .map-stage { min-height: 0; height: 100%; }
+  .layers-strip { flex: 2 1 0; min-height: 0; overflow-y: auto; }
+}

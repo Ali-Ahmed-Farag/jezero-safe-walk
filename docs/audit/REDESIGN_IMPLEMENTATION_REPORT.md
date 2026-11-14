@@ -69,7 +69,22 @@
 3. Interactive visual sign-off of the new aesthetic by a human reviewer recommended (screenshots provided).
 4. Branch committed locally — **push requires explicit approval**.
 
-## 10. Final readiness verdict
+## 11. Phase 2.1 — Layout & Visual Polish (2026-11-14, same branch)
+
+Owner-approved polish pass after reviewing the rendered NOVA UI. Root causes found and fixed:
+
+| Issue (reported) | Root cause | Fix | Verified |
+|---|---|---|---|
+| Scenario dropdown hidden behind the map | `.nav-links` glass creates a stacking context (backdrop-filter) that trapped the dropdown's z-index while Leaflet panes painted in the root context | `.topnav { position: relative; z-index: 1500 }` + dropdown `z-index: 2500` | ✅ `elementFromPoint` hits all 4 scenario buttons (`elementFromPoint` probe) |
+| Black empty areas around the map | initial view was `setView(center, 1)` (image overflowed/cropped with dark background) | `map.fitBounds(full grid)` + `invalidateSize()` after layout settles + `#map` background = `--map-bg` navy (no near-black) | ✅ map fills its content box exactly (738×409 == stage client box); DEM overlay loaded |
+| Dashboard components overlapping (cards under hero/map row) | `layout.css` was missing its NOVA structural section entirely (root cause of most Phase-2 layout issues) + grid row grew with rail content | Full NOVA `layout.css` written; `grid-template-rows: minmax(0,1fr)` on `.row-top` (rail scrolls internally, never overlaps); flex distribution 5/2/2 (row/cards/strip); desktop = single-viewport (no page scroll) | ✅ geometry probe: hero/map/rail y=82 h=411 · cards y=507 · layers y=686..884 — **zero overlapping rects**, everything within 900px |
+| Too dark / low contrast | near-black glass + faint borders | Lighter navy surfaces (`rgba(28,40,68,.55)` glass), brighter borders (`rgba(130,175,255,.22)`), lifted dim text (`#A9B7D6`), stronger blue glow, `--map-bg` navy | ✅ surface luminance probe 40 (was ~14); readability up |
+
+**Phase 2.1 battery: 16/16 PASS** (dropdown-above-map proof, map fill, no-overlap geometry, brightness, preset routing 0.44 km, mode switch, reset, center-on-landing, 4 viewports no-overflow + badge visible; console 0 errors; network 0 failures).
+
+**Modified in this pass:** `web/css/layout.css` (full NOVA rewrite), `web/css/tokens.css`, `web/css/components.css`, `web/css/responsive.css`, `web/js/app.js` (fitBounds/invalidateSize/keep-zoom centering). Data/routing contracts untouched (blob check unchanged).
+
+## 12. Final readiness verdict (updated after Phase 2.1)
 
 ## **READY FOR E2E TESTING**
 
