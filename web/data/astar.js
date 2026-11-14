@@ -99,6 +99,18 @@ function findRoute({
 }) {
     const [sr, sc] = start;
     const [er, ec] = end;
+
+    // B9: defensive bounds validation. start/end must be integer grid indices;
+    // previously, out-of-grid values silently collided with in-grid flat indices
+    // (e.g. end [0, width] mapped to the same flat index as [1, 0]) and could
+    // return a misleading route. Reason strings stay compatible with existing
+    // consumers (found/reason/path shape preserved).
+    const validIdx = (v, hi) => Number.isInteger(v) && v >= 0 && v < hi;
+    if (!validIdx(sr, height) || !validIdx(sc, width) ||
+        !validIdx(er, height) || !validIdx(ec, width)) {
+        return { found: false, reason: 'out_of_grid', path: [] };
+    }
+
     const N = width * height;
 
     const startSlope = slope[sr * width + sc] / slopeScale;
@@ -131,7 +143,7 @@ function findRoute({
 
     const dirs = [
         [-1, 0, 1], [1, 0, 1], [0, -1, 1], [0, 1, 1],
-        [-1, -1, 1.4142], [-1, 1, 1.4142], [1, -1, 1.4142], [1, 1, 1.4142]
+        [-1, -1, Math.SQRT2], [-1, 1, Math.SQRT2], [1, -1, Math.SQRT2], [1, 1, Math.SQRT2]
     ];
 
     let expansions = 0;
