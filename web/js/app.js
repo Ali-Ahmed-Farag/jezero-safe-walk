@@ -3,12 +3,14 @@ import { createSlopeCanvas } from './map/raster-layers.js';
 import { loadJSON, projectGeoJSON, addRoverTrack, addScienceTargets } from './map/vector-layers.js';
 import { handleMapClick, calculateAndDrawRoute } from './routing/route-controller.js';
 import { drawProfile } from './charts/elevation-profile.js';
+import { drawValidationScatter } from './charts/validation-chart.js';
 import { latLonToRowCol, rowColToLatLon } from './grid-utils.js';
 
 const state = {
   meta: null, slope: null, elev: null, start: null, end: null,
   profile: { safe: 10, hard: 16, forbidden: 16 },
   thermal: null, roverTrack: null,
+  speedKmh: 2,
 };
 
 const SUIT_PRESETS = {
@@ -25,7 +27,6 @@ const ui = { hint: document.getElementById("map-hint") };
 let slopeOverlay = null, roverLayer = null, targetsLayer = null;
 let currentMetrics = null;
 
-// --- P0-4: Debounce Logic ---
 let calcTimeout = null;
 let currentRequestId = 0;
 
@@ -34,32 +35,22 @@ function debouncedCalculateRoute(map, state, ui, callback, mode) {
   calcTimeout = setTimeout(() => {
     ui.hint.textContent = "Calculating route...";
     ui.hint.style.color = "var(--accent)";
-    
     currentRequestId++;
     const reqId = currentRequestId;
-    
     setTimeout(() => {
       const res = calculateAndDrawRoute(map, state, ui, callback, mode);
-      
       if (reqId !== currentRequestId) return;
-      
       ui.hint.style.color = "var(--text)";
-      if (res) {
-        callback(res.result, res.metrics);
-      } else {
-        ui.hint.textContent = "No safe route found or invalid points.";
-        callback(null, null);
-      }
+      if (res) callback(res.result, res.metrics);
+      else { ui.hint.textContent = "No safe route found or invalid points."; callback(null, null); }
     }, 10);
   }, 150);
 }
 
-// P0-6: Grid Alignment Test
 function testGridRoundtrip(meta) {
   const landingSite = { lat: 18.4446, lon: 77.4509 };
   const rc = latLonToRowCol(landingSite.lat, landingSite.lon, meta);
   const ll = rowColToLatLon(rc.row, rc.col, meta);
-  
   if (Math.abs(ll.lat - landingSite.lat) > 0.0001 || Math.abs(ll.lon - landingSite.lon) > 0.0001) {
     console.error(`Grid roundtrip FAILED.`);
   } else {
@@ -67,7 +58,6 @@ function testGridRoundtrip(meta) {
   }
 }
 
-// P0-2: Approximate Distance Calculation
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 3389500;
   const p1 = lat1 * Math.PI/180, p2 = lat2 * Math.PI/180;
@@ -101,17 +91,45 @@ async function boot() {
     ui.hint.textContent = "Loading data...";
     state.meta = await loadGridMeta();
     const expectedCells = state.meta.width * state.meta.height;
-
     testGridRoundtrip(state.meta);
-
     state.elev = await loadElevation('./data/elev_dm_i16.bin', expectedCells);
     state.slope = await loadSlope('./data/slope_u8.bin', expectedCells);
 
     const mapBounds = [[0, 0], [state.meta.height, state.meta.width]];
     map.setView([state.meta.height / 2, state.meta.width / 2], 1);
 
+    // 1. Add CTX Basemap (Bottom Layer)
+    try {
+      const ctxLayer = L.imageOverlay('./data/ctx_basemap.jpg', mapBounds, { opacity: 1.0, interactive: false }).addTo(map);
+      ctxLayer.on('load', () => {
+        document.getElementById('layer-ctx').disabled = false;
+        document.getElementById('layer-ctx').parentElement.style.opacity = 1;
+        document.getElementById('opacity-ctx').disabled = false;
+      });
+      ctxLayer.on('error', () => console.warn("CTX missing"));
+      
+      document.getElementById('layer-ctx').addEventListener('change', (e) => e.target.checked ? ctxLayer.addTo(map) : map.removeLayer(ctxLayer));
+      document.getElementById('opacity-ctx').addEventListener('input', (e) => ctxLayer.setOpacity(e.target.value / 100));
+      ctxLayer.bringToBack();
+    } catch(e) {}
+
+    // 2. Add Hillshade (Middle Layer)
+    try {
+      const hsLayer = L.imageOverlay('./data/hillshade.png', mapBounds, { opacity: 0.6, interactive: false }).addTo(map);
+      hsLayer.on('load', () => {
+        document.getElementById('layer-hillshade').disabled = false;
+        document.getElementById('layer-hillshade').parentElement.style.opacity = 1;
+        document.getElementById('opacity-hillshade').disabled = false;
+      });
+      hsLayer.on('error', () => console.warn("Hillshade missing"));
+
+      document.getElementById('layer-hillshade').addEventListener('change', (e) => e.target.checked ? hsLayer.addTo(map) : map.removeLayer(hsLayer));
+      document.getElementById('opacity-hillshade').addEventListener('input', (e) => hsLayer.setOpacity(e.target.value / 100));
+      hsLayer.bringToBack();
+    } catch(e) {}
+
+    // 3. Add Slope Map (Top Raster Layer)
     updateSlopeOverlay(mapBounds);
-    setupMissingLayers();
 
     state.roverTrack = await loadJSON('./data/rover_track.geojson');
     roverLayer = addRoverTrack(map, projectGeoJSON(state.roverTrack, state.meta));
@@ -123,6 +141,14 @@ async function boot() {
     await setupPresets();
     await setupValidation();
     await setupThermal();
+    
+    document.getElementById('input-speed').addEventListener('input', (e) => {
+      state.speedKmh = parseFloat(e.target.value) || 2;
+      if (currentMetrics) {
+        const newTime = (currentMetrics.length_km / state.speedKmh).toFixed(2);
+        document.getElementById('mb-time').textContent = `${newTime} h`;
+      }
+    });
 
     ui.hint.textContent = "Click to set Start";
   } catch (error) {
@@ -131,24 +157,15 @@ async function boot() {
   }
 }
 
-function setupMissingLayers() {
-  const ctxToggle = document.getElementById('layer-ctx');
-  const hsToggle = document.getElementById('layer-hillshade');
-  if(ctxToggle) { ctxToggle.disabled = true; ctxToggle.parentElement.title = "Layer not available yet"; ctxToggle.parentElement.style.opacity = 0.5; }
-  if(hsToggle) { hsToggle.disabled = true; hsToggle.parentElement.title = "Layer not available yet"; hsToggle.parentElement.style.opacity = 0.5; }
-}
-
 async function setupPresets() {
   try {
     const presetsData = await loadJSON('./data/presets.json');
     const presetsMenu = document.getElementById('presets-dropdown');
-    
     presetsData.forEach(p => {
       const btn = document.createElement('button');
       let roverDistText = "";
-      if (p.rover_distance_km) {
-        roverDistText = ` (${p.rover_distance_km} km)`;
-      } else if (state.roverTrack) {
+      if (p.rover_distance_km) roverDistText = ` (${p.rover_distance_km} km)`;
+      else if (state.roverTrack) {
         const calcDist = calcApproxRoverDistance(state.roverTrack, p.start, p.end);
         if (calcDist !== null) roverDistText = ` (~${calcDist.toFixed(2)} km Approx)`;
       }
@@ -160,18 +177,14 @@ async function setupPresets() {
         presetsMenu.style.display = 'none';
         const startRC = latLonToRowCol(p.start[0], p.start[1], state.meta);
         const endRC = latLonToRowCol(p.end[0], p.end[1], state.meta);
-
         map.eachLayer(layer => {
           if (layer instanceof L.Polyline) map.removeLayer(layer);
           if (layer instanceof L.CircleMarker) map.removeLayer(layer);
         });
-
         state.start = [Math.round(startRC.row), Math.round(startRC.col)];
         state.end = [Math.round(endRC.row), Math.round(endRC.col)];
-
         L.circleMarker([state.start[0], state.start[1]], { radius: 7, color: '#fff', fillColor: '#3FB950', fillOpacity: 1, weight: 2 }).addTo(map);
         L.circleMarker([state.end[0], state.end[1]], { radius: 7, color: '#fff', fillColor: '#F85149', fillOpacity: 1, weight: 2 }).addTo(map);
-
         debouncedCalculateRoute(map, state, ui, updateMissionBrief, "safest");
       });
       presetsMenu.appendChild(btn);
@@ -184,9 +197,7 @@ async function setupPresets() {
     document.addEventListener('click', (e) => {
       if (!e.target.closest('#btn-presets')) presetsMenu.style.display = 'none';
     });
-  } catch (err) {
-    console.warn("Presets not loaded", err);
-  }
+  } catch (err) { console.warn("Presets not loaded", err); }
 }
 
 function updateSlopeOverlay(bounds) {
@@ -195,7 +206,7 @@ function updateSlopeOverlay(bounds) {
   const url = canvas.toDataURL("image/png");
   const currentOpacity = document.getElementById('opacity-slope') ? document.getElementById('opacity-slope').value / 100 : 0.7;
   slopeOverlay = L.imageOverlay(url, bounds, { opacity: currentOpacity, interactive: false }).addTo(map);
-  slopeOverlay.bringToBack();
+  slopeOverlay.bringToFront(); // نخليها فوق الخرايط التانية
   updateLegend();
 }
 
@@ -218,16 +229,30 @@ function setupLayerControls() {
   document.getElementById('opacity-targets').addEventListener('input', (e) => targetsLayer.setStyle({ opacity: e.target.value / 100, fillOpacity: e.target.value / 100 }));
 }
 
+function updateThermalRec() {
+  const recEl = document.getElementById('mb-thermal-rec');
+  if (state.thermal && state.thermal.points) {
+    const dayT = state.thermal.points.find(p => p.label === 'Day')?.temp || -22;
+    const nightT = state.thermal.points.find(p => p.label === 'Night')?.temp || -83;
+    recEl.innerHTML = `<strong>EVA Window:</strong> Suggested daytime EVA due to extreme cold at night (Day: ${dayT}°C, Night: ${nightT}°C). Preliminary recommendation only.`;
+  }
+}
+
 function updateMissionBrief(route, metrics) {
   currentMetrics = metrics;
+  updateThermalRec();
+
   if (!metrics) {
     ['mb-dist', 'mb-time', 'mb-max-slope', 'mb-ascent', 'mb-descent', 'mb-risk'].forEach(id => document.getElementById(id).textContent = '-');
     document.getElementById('mb-risk').className = 'value';
     drawProfile('profile-canvas', null);
     return;
   }
+
+  const time = (metrics.length_km / state.speedKmh).toFixed(2);
+
   document.getElementById('mb-dist').textContent = `${metrics.length_km} km`;
-  document.getElementById('mb-time').textContent = `${metrics.time_h} h`;
+  document.getElementById('mb-time').textContent = `${time} h`;
   document.getElementById('mb-max-slope').textContent = `${metrics.max_slope}°`;
   document.getElementById('mb-ascent').textContent = `${metrics.ascent_m} m`;
   document.getElementById('mb-descent').textContent = `${metrics.descent_m} m`;
@@ -241,25 +266,20 @@ function updateMissionBrief(route, metrics) {
 }
 
 document.getElementById('btn-compare').addEventListener('click', () => {
-  if (!state.start || !state.end) {
-    alert("Please select a Start and Target first.");
-    return;
-  }
+  if (!state.start || !state.end) { alert("Please select a Start and Target first."); return; }
   ui.hint.textContent = "Comparing routes...";
-  
   currentRequestId++;
   const reqId = currentRequestId;
   setTimeout(() => {
     const safestRes = calculateAndDrawRoute(map, state, ui, null, "safest");
     const shortestRes = calculateAndDrawRoute(map, state, ui, null, "shortest");
-    
     if (reqId !== currentRequestId) return;
 
     if (safestRes && shortestRes) {
       document.getElementById('comp-safest-dist').textContent = safestRes.metrics.length_km;
       document.getElementById('comp-shortest-dist').textContent = shortestRes.metrics.length_km;
-      document.getElementById('comp-safest-time').textContent = safestRes.metrics.time_h;
-      document.getElementById('comp-shortest-time').textContent = shortestRes.metrics.time_h;
+      document.getElementById('comp-safest-time').textContent = (safestRes.metrics.length_km / state.speedKmh).toFixed(2);
+      document.getElementById('comp-shortest-time').textContent = (shortestRes.metrics.length_km / state.speedKmh).toFixed(2);
       document.getElementById('comp-safest-slope').textContent = safestRes.metrics.max_slope;
       document.getElementById('comp-shortest-slope').textContent = shortestRes.metrics.max_slope;
       document.getElementById('comp-safest-ascent').textContent = safestRes.metrics.ascent_m;
@@ -268,9 +288,7 @@ document.getElementById('btn-compare').addEventListener('click', () => {
       updateMissionBrief(safestRes.result, safestRes.metrics);
       ui.hint.textContent = "Routes compared!";
       document.getElementById('compare-modal').style.display = 'flex';
-    } else {
-      ui.hint.textContent = "Comparison failed.";
-    }
+    } else ui.hint.textContent = "Comparison failed.";
   }, 10);
 });
 
@@ -293,11 +311,8 @@ document.querySelectorAll('input[name="suit"]').forEach(radio => {
 map.on("click", (e) => {
   if (!state.meta || !state.slope) return;
   handleMapClick(map, e, state, ui, (res, metrics) => {
-    if (state.end) {
-      debouncedCalculateRoute(map, state, ui, updateMissionBrief, "safest");
-    } else {
-      updateMissionBrief(null, null);
-    }
+    if (state.end) debouncedCalculateRoute(map, state, ui, updateMissionBrief, "safest");
+    else updateMissionBrief(null, null);
   });
 });
 
@@ -317,6 +332,7 @@ window.addEventListener('resize', () => {
     map.invalidateSize();
     if (currentMetrics && currentMetrics.arrays) drawProfile('profile-canvas', currentMetrics.arrays);
     if (state.thermal && document.getElementById('thermal-modal').style.display === 'flex') drawThermalChart(state.thermal);
+    if (document.getElementById('validation-modal').style.display === 'flex' && state.validationSample) drawValidationScatter('val-scatter-canvas', state.validationSample);
   }, 200);
 });
 
@@ -328,8 +344,10 @@ async function setupThermal() {
       document.getElementById('thermal-modal').style.display = 'flex';
       setTimeout(() => drawThermalChart(state.thermal), 50); 
     });
+    updateThermalRec();
   } catch (err) {}
 }
+
 function drawThermalChart(data) {
   const canvas = document.getElementById('thermal-canvas');
   if (!canvas) return;
@@ -341,31 +359,81 @@ function drawThermalChart(data) {
   ctx.scale(dpr, dpr);
   const width = parent.clientWidth, height = parent.clientHeight;
   ctx.clearRect(0, 0, width, height);
-  const curve = data.curve, padding = { top: 20, right: 20, bottom: 30, left: 40 };
-  const w = width - padding.left - padding.right, h = height - padding.top - padding.bottom;
-  let minTemp = Math.min(...curve.map(c => c.temp)), maxTemp = Math.max(...curve.map(c => c.temp));
-  const scaleX = (hour) => padding.left + (hour / 24) * w;
+
+  const points = data.points || [];
+  if (points.length === 0) return;
+
+  const padding = { top: 40, right: 40, bottom: 40, left: 60 };
+  const w = width - padding.left - padding.right;
+  const h = height - padding.top - padding.bottom;
+
+  let minTemp = Math.min(...points.map(c => c.temp));
+  let maxTemp = Math.max(...points.map(c => c.temp));
+  minTemp -= 10; maxTemp += 10;
+
+  const scaleX = (idx) => padding.left + (idx / (points.length - 1)) * w;
   const scaleY = (temp) => padding.top + h - ((temp - minTemp) / (maxTemp - minTemp)) * h;
-  ctx.beginPath(); ctx.strokeStyle = '#FF6B3D'; ctx.lineWidth = 2;
-  curve.forEach((point, i) => { const x = scaleX(point.hour), y = scaleY(point.temp); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); });
-  ctx.stroke();
-  curve.forEach(point => { const x = scaleX(point.hour), y = scaleY(point.temp); ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fillStyle = '#E6EAF2'; ctx.fill(); });
-  ctx.fillStyle = '#8A93A8'; ctx.font = '10px sans-serif';
-  ctx.fillText(`${maxTemp}°C`, 5, padding.top + 5); ctx.fillText(`${minTemp}°C`, 5, height - padding.bottom);
-  ctx.fillText('0h', padding.left, height - 5); ctx.fillText('12h', padding.left + w/2 - 10, height - 5); ctx.fillText('24h', padding.left + w - 20, height - 5);
+
+  points.forEach((pt, i) => {
+    const x = scaleX(i);
+    const y = scaleY(pt.temp);
+    
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, Math.PI * 2);
+    ctx.fillStyle = '#FF6B3D';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = '#E6EAF2';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${pt.temp}°C`, x, y - 15);
+    
+    ctx.fillStyle = '#8A93A8';
+    ctx.fillText(pt.label, x, height - 15);
+  });
 }
+
 async function setupValidation() {
   try {
     const valData = await loadJSON('./data/validation_results.json');
     const m = valData.metrics;
+    
     document.getElementById('val-pitch-r').textContent = m.pitch.correlation_r.toFixed(3);
     document.getElementById('val-pitch-rmse').textContent = m.pitch.rmse_deg.toFixed(2);
     document.getElementById('val-roll-r').textContent = m.roll.correlation_r.toFixed(3);
     document.getElementById('val-roll-rmse').textContent = m.roll.rmse_deg.toFixed(2);
     document.getElementById('val-elev-bias').textContent = m.elevation.mean_bias_m.toFixed(2);
     document.getElementById('val-interpretation').textContent = valData.summary.scientific_interpretation;
-    document.getElementById('btn-validation').addEventListener('click', () => document.getElementById('validation-modal').style.display = 'flex');
-  } catch (err) {}
+
+    const tbody = document.getElementById('val-bins-body');
+    if (valData.slope_bins && tbody) {
+      valData.slope_bins.forEach(b => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${b.bin}</td>
+          <td>${b.count}</td>
+          <td>${b.mean_dem_slope_deg.toFixed(2)}°</td>
+          <td>${b.mean_abs_pitch_deg.toFixed(2)}°</td>
+          <td>${b.mean_abs_roll_deg.toFixed(2)}°</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    if (valData.sample) state.validationSample = valData.sample;
+
+    document.getElementById('btn-validation').addEventListener('click', () => {
+      document.getElementById('validation-modal').style.display = 'flex';
+      setTimeout(() => {
+        if (state.validationSample) drawValidationScatter('val-scatter-canvas', state.validationSample);
+      }, 50);
+    });
+  } catch (err) {
+    console.warn("Validation data not loaded", err);
+  }
 }
 
 boot();

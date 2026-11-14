@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -42,12 +42,12 @@
       <div class="panel-header">Layers</div>
       <div class="panel-body" id="layer-controls">
         <div class="layer-item">
-          <label><input type="checkbox" id="layer-ctx" disabled> CTX Basemap</label>
-          <input type="range" id="opacity-ctx" min="0" max="100" value="100" disabled>
+          <label><input type="checkbox" id="layer-ctx" checked> CTX Basemap</label>
+          <input type="range" id="opacity-ctx" min="0" max="100" value="100">
         </div>
         <div class="layer-item">
-          <label><input type="checkbox" id="layer-hillshade" disabled> Hillshade</label>
-          <input type="range" id="opacity-hillshade" min="0" max="100" value="100" disabled>
+          <label><input type="checkbox" id="layer-hillshade" checked> Hillshade</label>
+          <input type="range" id="opacity-hillshade" min="0" max="100" value="60">
         </div>
         <div class="layer-item">
           <label><input type="checkbox" id="layer-slope" checked> Slope Map</label>
@@ -93,10 +93,15 @@
           <div class="brief-item"><span class="label">Ascent</span><span class="value" id="mb-ascent">-</span></div>
           <div class="brief-item"><span class="label">Descent</span><span class="value" id="mb-descent">-</span></div>
         </div>
+
+        <!-- Speed Input -->
+        <div style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between; background: var(--surface-2); padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+          <label for="input-speed" style="font-size: 11px; color: var(--text-dim);">Walking Speed (km/h)</label>
+          <input type="number" id="input-speed" value="2" min="0.5" max="5" step="0.5" style="width: 50px; background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 2px 4px; border-radius: 4px; text-align: center;">
+        </div>
         
         <!-- Thermal Recommendation Line -->
-        <div id="mb-thermal-rec" style="font-size: 11px; color: var(--text-dim); margin-top: 12px; padding: 8px; border-left: 2px solid var(--hard); background: rgba(227, 179, 65, 0.1);">
-          <!-- Filled by JS -->
+        <div id="mb-thermal-rec" style="font-size: 11px; color: var(--text-dim); margin-top: 12px; padding: 8px; border-right: 2px solid var(--hard); border-left: none; background: rgba(227, 179, 65, 0.1);">
         </div>
       </div>
     </aside>
@@ -110,7 +115,7 @@
 
   </main>
 
-  <!-- About Modal -->
+  <!-- Modals -->
   <div class="modal-backdrop" id="about-modal" style="display: none;">
     <div class="modal">
       <div class="modal-header"><h2>About Jezero Safe Walk</h2><button class="btn btn-ghost close-modal-btn">✕</button></div>
@@ -124,7 +129,6 @@
     </div>
   </div>
 
-  <!-- Sources Modal -->
   <div class="modal-backdrop" id="sources-modal" style="display: none;">
     <div class="modal">
       <div class="modal-header"><h2>Data Sources & Limitations</h2><button class="btn btn-ghost close-modal-btn">✕</button></div>
@@ -142,57 +146,38 @@
           <li><strong>Planning Tool Only:</strong> This is a preliminary EVA planning tool, not a real-time navigation system.</li>
           <li><strong>Suit Thresholds:</strong> The Safe/Hard/Forbidden slope thresholds are based on Perseverance rover data (99% under 16°). They are adjustable and not medically validated for humans.</li>
           <li><strong>Resolution:</strong> The 20m DEM does not show small rocks or hazards.</li>
-          <li><strong>Walking Speed:</strong> Estimated time assumes a constant speed of 2 km/h on all terrain.</li>
+          <li><strong>Walking Speed:</strong> Estimated time assumes a constant speed (default 2 km/h) on all terrain.</li>
         </ul>
       </div>
     </div>
   </div>
 
-  <!-- Validation Modal -->
   <div class="modal-backdrop" id="validation-modal" style="display: none;">
     <div class="modal" style="max-width: 800px;">
       <div class="modal-header"><h2>Scientific Validation (vs Perseverance)</h2><button class="btn btn-ghost close-modal-btn">✕</button></div>
       <div class="modal-body">
         <p>Our terrain slope calculations were validated against actual Perseverance rover pitch telemetry over <strong>32,003 points</strong>.</p>
-        
-        <p style="color: var(--accent); font-size: 12px; margin-top: 10px; padding: 8px; border-left: 3px solid var(--accent); background: rgba(255,107,61,0.1);">
+        <p style="color: var(--accent); font-size: 12px; margin-top: 10px; padding: 8px; border-right: 3px solid var(--accent); border-left: none; background: rgba(255,107,61,0.1);">
           <em>Disclaimer: The data pertains to the Perseverance rover, not human measurements. Validation results do not guarantee human route safety.</em>
         </p>
-
         <div class="validation-grid">
           <div class="val-card"><h4>Pitch Correlation</h4><div class="val-value" id="val-pitch-r">-</div><div class="val-sub">RMSE: <span id="val-pitch-rmse">-</span>°</div></div>
           <div class="val-card"><h4>Roll Correlation</h4><div class="val-value" id="val-roll-r">-</div><div class="val-sub">RMSE: <span id="val-roll-rmse">-</span>°</div></div>
           <div class="val-card"><h4>Elevation Bias</h4><div class="val-value" id="val-elev-bias">-</div><div class="val-sub">m (DEM vs Rover)</div></div>
         </div>
-
         <h3>Pitch Scatter Plot (Sample)</h3>
-        <div class="val-chart-container">
-          <canvas id="val-scatter-canvas"></canvas>
-        </div>
-
+        <div class="val-chart-container"><canvas id="val-scatter-canvas"></canvas></div>
         <h3>Slope Bins Analysis</h3>
         <table class="val-table">
-          <thead>
-            <tr>
-              <th>Slope Bin</th>
-              <th>Count</th>
-              <th>DEM Slope</th>
-              <th>Rover Pitch</th>
-              <th>Rover Roll</th>
-            </tr>
-          </thead>
-          <tbody id="val-bins-body">
-            <!-- Filled by JS -->
-          </tbody>
+          <thead><tr><th>Slope Bin</th><th>Count</th><th>DEM Slope</th><th>Rover Pitch</th><th>Rover Roll</th></tr></thead>
+          <tbody id="val-bins-body"></tbody>
         </table>
-
         <h3>Interpretation</h3>
         <p id="val-interpretation" style="font-size: 12px; color: var(--text-dim); margin-top: 10px;"></p>
       </div>
     </div>
   </div>
 
-  <!-- Compare Modal -->
   <div class="modal-backdrop" id="compare-modal" style="display: none;">
     <div class="modal">
       <div class="modal-header"><h2>Route Comparison</h2><button class="btn btn-ghost close-modal-btn">✕</button></div>
@@ -211,7 +196,6 @@
     </div>
   </div>
 
-  <!-- Thermal Modal -->
   <div class="modal-backdrop" id="thermal-modal" style="display: none;">
     <div class="modal">
       <div class="modal-header"><h2>Thermal Window (Daily)</h2><button class="btn btn-ghost close-modal-btn">✕</button></div>
