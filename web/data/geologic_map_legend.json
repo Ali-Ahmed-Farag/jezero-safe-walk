@@ -1,0 +1,230 @@
+{
+  "product": "Jezero Safe Walk geological map layer",
+  "grid": {
+    "width": 1016,
+    "height": 1075,
+    "pixel_size_projected_m": 20,
+    "crs": "+proj=eqc +lat_ts=18.4663 +lat_0=0 +lon_0=0 +x_0=0 +y_0=0 +R=3396190 +units=m",
+    "row0": "north",
+    "col0": "west",
+    "layout": "row_major"
+  },
+  "source": {
+    "citation": "Sun, V., and Stack, K., 2020, Geologic map of Jezero crater and the Nili Planum region, Mars: U.S. Geological Survey Scientific Investigations Map 3464, pamphlet 14 p., 1 sheet, scale 1:75,000, https://doi.org/10.3133/sim3464",
+    "doi": "10.3133/sim3464",
+    "url": "https://pubs.usgs.gov/sim/3464/",
+    "archive_sha256": "a88bd53a5573743cc4a20036c10e585106d08a433ad2f34af269e9cea1529f87",
+    "scale": "1:75,000",
+    "license": "USGS public domain (access constraints: none; fees: none)"
+  },
+  "known_offset_note": "Known limitation (official README/FGDC metadata): the map was digitized on a semi-controlled CTX mosaic predating the controlled mosaic (DOI 10.5066/P9GV1ND3) used for this project's basemap; unit boundaries carry random offsets of about 100-200 metres from our grid and are NOT exactly aligned with the CTX basemap.",
+  "rendering": {
+    "reprojection": "Mars TM (clon 77.5E, R=3396190) -> equirectangular lat_ts=18.4663 (R=3396190)",
+    "supersample": 4,
+    "downsample": "majority vote over 16 subpixels; ties: lowest unit id first, background last",
+    "background": {
+      "alpha": 0,
+      "meaning": "unmapped area (transparent; CTX basemap shows through)"
+    },
+    "unit_alpha": 255
+  },
+  "units": [
+    {
+      "unit": 0,
+      "name": "Jezero fan 2 unit",
+      "symbol": "NHjf2",
+      "color_hex": "#F5C58A",
+      "rgb": [
+        245,
+        197,
+        138
+      ],
+      "alpha": 255,
+      "pixel_count_in_grid": 67892,
+      "in_this_grid": true
+    },
+    {
+      "unit": 1,
+      "name": "Jezero fan 1 unit",
+      "symbol": "NHjf1",
+      "color_hex": "#E8A75C",
+      "rgb": [
+        232,
+        167,
+        92
+      ],
+      "alpha": 255,
+      "pixel_count_in_grid": 26243,
+      "in_this_grid": true
+    },
+    {
+      "unit": 2,
+      "name": "Jezero floor unit",
+      "symbol": "Njf",
+      "color_hex": "#A6D8E8",
+      "rgb": [
+        166,
+        216,
+        232
+      ],
+      "alpha": 255,
+      "pixel_count_in_grid": 266342,
+      "in_this_grid": true
+    },
+    {
+      "unit": 3,
+      "name": "Lower etched unit",
+      "symbol": "Nle",
+      "color_hex": "#C98A4B",
+      "rgb": [
+        201,
+        138,
+        75
+      ],
+      "alpha": 255,
+      "pixel_count_in_grid": 81918,
+      "in_this_grid": true
+    },
+    {
+      "unit": 4,
+      "name": "Nili Planum fan unit",
+      "symbol": "Hnpf",
+      "color_hex": "#E8E3B0",
+      "rgb": [
+        232,
+        227,
+        176
+      ],
+      "alpha": 255,
+      "pixel_count_in_grid": 0,
+      "in_this_grid": false
+    },
+    {
+      "unit": 5,
+      "name": "Nili Planum 2 unit",
+      "symbol": "Nnp2",
+      "color_hex": "#B5C98A",
+      "rgb": [
+        181,
+        201,
+        138
+      ],
+      "alpha": 255,
+      "pixel_count_in_grid": 2494,
+      "in_this_grid": true
+    },
+    {
+      "unit": 6,
+      "name": "Nili Planum 1 unit",
+      "symbol": "Nnp1",
+      "color_hex": "#8FA36B",
+      "rgb": [
+        143,
+        163,
+        107
+      ],
+      "alpha": 255,
+      "pixel_count_in_grid": 15407,
+      "in_this_grid": true
+    },
+    {
+      "unit": 7,
+      "name": "Eolian bedform unit",
+      "symbol": "Aeb",
+      "color_hex": "#F2E14C",
+      "rgb": [
+        242,
+        225,
+        76
+      ],
+      "alpha": 255,
+      "pixel_count_in_grid": 150285,
+      "in_this_grid": true
+    },
+    {
+      "unit": 8,
+      "name": "Smooth unit, undivided",
+      "symbol": "su",
+      "color_hex": "#D9D9D9",
+      "rgb": [
+        217,
+        217,
+        217
+      ],
+      "alpha": 255,
+      "pixel_count_in_grid": 36935,
+      "in_this_grid": true
+    },
+    {
+      "unit": 9,
+      "name": "Rugged bright unit",
+      "symbol": "Nrb",
+      "color_hex": "#F4F4F4",
+      "rgb": [
+        244,
+        244,
+        244
+      ],
+      "alpha": 255,
+      "pixel_count_in_grid": 2729,
+      "in_this_grid": true
+    },
+    {
+      "unit": 10,
+      "name": "Upper etched unit",
+      "symbol": "Nue",
+      "color_hex": "#C77F5B",
+      "rgb": [
+        199,
+        127,
+        91
+      ],
+      "alpha": 255,
+      "pixel_count_in_grid": 314658,
+      "in_this_grid": true
+    },
+    {
+      "unit": 11,
+      "name": "Crater rim unit",
+      "symbol": "cr",
+      "color_hex": "#B04A4A",
+      "rgb": [
+        176,
+        74,
+        74
+      ],
+      "alpha": 255,
+      "pixel_count_in_grid": 127297,
+      "in_this_grid": true
+    },
+    {
+      "unit": 12,
+      "name": "Crater ejecta unit",
+      "symbol": "ce",
+      "color_hex": "#E2B6B6",
+      "rgb": [
+        226,
+        182,
+        182
+      ],
+      "alpha": 255,
+      "pixel_count_in_grid": 0,
+      "in_this_grid": false
+    },
+    {
+      "unit": 13,
+      "name": "Crater interior unit",
+      "symbol": "ci",
+      "color_hex": "#6E4F4F",
+      "rgb": [
+        110,
+        79,
+        79
+      ],
+      "alpha": 255,
+      "pixel_count_in_grid": 0,
+      "in_this_grid": false
+    }
+  ],
+  "background_pixel_count_in_grid": 0
+}
