@@ -1,0 +1,55 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [77.450886, 18.444627] },
+      "properties": {
+        "name": "Octavia E. Butler Landing",
+        "description": "Perseverance's landing site in Jezero Crater, where the rover touched down on February 18, 2021. NASA officially named the site Octavia E. Butler Landing on March 5, 2021.",
+        "source": "NASA, \"Welcome to 'Octavia E. Butler Landing'\" (naming announcement, 2021-03-05); landing position from PDS Mars 2020 Rover PLACES best_interp.csv (Release 16), SITE 1 reference.",
+        "source_url": "https://science.nasa.gov/resource/welcome-to-octavia-e-butler-landing/",
+        "coordinate_source": "PDS Mars 2020 Rover PLACES bundle, data_localizations/best_interp.csv Release 16, SITE 1 landing reference; exact landing-site reference point, not a regional approximation.",
+        "coordinate_source_url": "https://pds-geosciences.wustl.edu/m2020/urn-nasa-pds-mars2020_rover_places/data_localizations/best_interp.csv",
+        "coordinate_reference": "Planetocentric latitude, east-positive longitude; PLACES equirectangular Mars frame (standard parallel 18.4663 deg, sphere radius 3396190 m), per PLACES SIS sections 3.9.1 and 5.1.3.",
+        "target_id": "site_1",
+        "location_type": "landing_site",
+        "representative": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [77.4433, 18.4312] },
+      "properties": {
+        "name": "Séítah Formation",
+        "description": "Séítah is an extended geological formation of layered, eroded ridges on the Jezero crater floor (Navajo: 'amidst the sands'); it is a regional unit, not a single official point. This marker is a representative rover observation location near the formation's southwest entrance, approximately 0.9 km southwest of Octavia E. Butler Landing (PLACES rover position, Sol 200). It is NOT the official center or boundary of Séítah.",
+        "source": "Bell III et al. (2022), Science Advances 8:eabo4856 — 'Perseverance was able to enter Séítah ~1 km southwest of the landing site'; formation context in Horgan et al. (2023), JGR Planets 128:e2022JE007612.",
+        "source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9683734/",
+        "coordinate_source": "PLACES rover position at Sol 200 (first fix of that sol; source precision 18.431230 N, 77.443324 E, truncated to 4 decimals to reflect ~km-class representativeness); explicit representative rover observation location.",
+        "coordinate_source_url": "https://pds-geosciences.wustl.edu/m2020/urn-nasa-pds-mars2020_rover_places/data_localizations/best_interp.csv",
+        "coordinate_reference": "Planetocentric latitude, east-positive longitude; PLACES equirectangular Mars frame (standard parallel 18.4663 deg, sphere radius 3396190 m).",
+        "target_id": "seitah_entrance_s200",
+        "location_type": "formation_representative",
+        "representative": true,
+        "rover_sol": 200
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [77.406093, 18.458514] },
+      "properties": {
+        "name": "Hogwallow Flats (Western Fan)",
+        "description": "Hogwallow Flats is a fine-grained sedimentary outcrop (member) within the Shenandoah Formation of Jezero's western fan. Perseverance arrived at the base of this outcrop on Sol 461 (Stack et al. 2024). This marker represents the rover's recorded observation location at the outcrop base, from the PLACES Sol 461 position. It is NOT a surveyed centroid or official boundary of the entire western delta front, and it is not the Neretva Vallis channel.",
+        "source": "Stack et al. (2024), JGR Planets, 'Sedimentology and Stratigraphy of the Shenandoah Formation, Western Fan, Jezero Crater, Mars' — arrival at base of Hogwallow Flats outcrop on Sol 461.",
+        "source_url": "https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2023JE008187",
+        "coordinate_source": "PLACES rover recorded position at Sol 461 (first fix of that sol: 18.458514 N, 77.406093 E, elevation -2524.211 m); representative rover observation location.",
+        "coordinate_source_url": "https://pds-geosciences.wustl.edu/m2020/urn-nasa-pds-mars2020_rover_places/data_localizations/best_interp.csv",
+        "coordinate_reference": "Planetocentric latitude, east-positive longitude; PLACES equirectangular Mars frame (standard parallel 18.4663 deg, sphere radius 3396190 m).",
+        "target_id": "hogwallow_flats_s461",
+        "location_type": "fan_front_rover_observation",
+        "representative": true,
+        "rover_sol": 461
+      }
+    }
+  ]
+}
