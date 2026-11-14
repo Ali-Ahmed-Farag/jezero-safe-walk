@@ -47,16 +47,14 @@ body {
   gap: 14px;
   padding: 6px var(--space-5) var(--space-5);
   flex: 1;
-  min-height: 0;
 }
 
 .row-top {
   display: grid;
   grid-template-columns: minmax(300px, 370px) 1fr minmax(215px, 235px);
-  grid-template-rows: minmax(0, 1fr); /* rail scrolls inside its cell - never overlaps cards */
+  grid-template-rows: minmax(500px, auto); /* rail scrolls inside its cell - never overlaps cards */
   gap: 14px;
   flex: 1;
-  min-height: 0;
 }
 
 .row-cards {
@@ -101,7 +99,6 @@ body {
   padding: var(--space-4);
   border-radius: var(--radius-lg);
   overflow-y: auto;
-  min-height: 0;
 }
 .rail-duo { display: flex; gap: var(--space-4); }
 .rail-divider { height: 1px; background: var(--glass-border); margin: 6px 0; }
@@ -200,13 +197,8 @@ body {
 .compare-table th, .compare-table td, .val-table th, .val-table td { padding: 8px 6px; text-align: left; }
 .compare-table td { font-family: var(--font-mono); }
 
-/* ===== Desktop: single-viewport dashboard ===== */
+/* ===== Desktop: natural-flow dashboard - regions never overlap; page scrolls only on short viewports ===== */
 @media (min-width: 1025px) {
-  body { height: 100vh; overflow: hidden; }
-  .nova { flex: 1; min-height: 0; }
-  .row-top { flex: 1 1 0; min-height: 0; }
-  .row-cards { flex: 0 0 232px; min-height: 232px; }
-  .stats-rail { min-height: 0; }
-  .map-stage { min-height: 0; height: 100%; }
-  .layers-strip { flex: 0 0 190px; min-height: 190px; overflow-y: auto; }
+  .row-top { grid-template-rows: minmax(500px, auto); }
+  .row-cards { grid-auto-rows: max-content; }
 }
