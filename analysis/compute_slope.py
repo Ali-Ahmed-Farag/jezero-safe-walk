@@ -41,11 +41,30 @@ def main():
         dx, dy = src.res
         width, height = src.width, src.height
 
-    if nodata is not None:
-        mask = np.isclose(dem, nodata) | np.isnan(dem)
-        if np.any(mask):
-            dem = dem.copy()
-            dem[mask] = np.nanmedian(dem[~mask])
+    # Invalid-pixel census (approved B6 policy: NO interpolation, NO masking,
+    # NO substitution). Exact equality against the declared finite NoData value;
+    # NaN and both infinities are detected separately. The run ABORTS before any
+    # gradient calculation if the DEM is not fully valid.
+    exact_nodata = (dem == np.float32(nodata)) if nodata is not None else np.zeros(dem.shape, dtype=bool)
+    nan_mask = np.isnan(dem)
+    pos_inf_mask = np.isposinf(dem)
+    neg_inf_mask = np.isneginf(dem)
+    invalid_census = {
+        "width": int(width),
+        "height": int(height),
+        "nodata_pixels": int(exact_nodata.sum()),
+        "nan_pixels": int(nan_mask.sum()),
+        "pos_inf_pixels": int(pos_inf_mask.sum()),
+        "neg_inf_pixels": int(neg_inf_mask.sum()),
+        "total_invalid": int(exact_nodata.sum() + nan_mask.sum() + pos_inf_mask.sum() + neg_inf_mask.sum()),
+    }
+    print(json.dumps({"invalid_pixel_census": invalid_census}, indent=2))
+    if invalid_census["total_invalid"]:
+        raise SystemExit(
+            "[error] DEM contains invalid pixels (census above). The approved slope "
+            "contract forbids interpolation across NoData - aborting before gradients. "
+            "Escalate: the shared grid is contractually complete."
+        )
 
     slope_deg = compute_horn_slope(dem, dx=float(dx), dy=float(dy))
 

@@ -9,6 +9,8 @@
 ## 2. أوامر إعادة التوليد (Regeneration Commands)
 *(ملاحظة: سكريبتات التحقق والإسقاط تعتمد على ملف DE2 النهائي `data/processed/rover_track_clean.csv` وملف `science_targets.geojson`)*
 
+ملاحظة (B6): ملف `web/data/elev_dm_i16.bin` بيتولّد من مولّد DE1 الرسمي الوحيد `pipeline/export_elev_bin.py` (ضرب Float64 + تقريب نصف-حتى + معالجة NoData + فحص ±Inf) وسكريبتات DS ما بتولّده — DS بيستهلك نسخة DE1 الموثقة والمتحقق منها. وكمان حساب الميل (`analysis/compute_slope.py`) بينفذ فحصًا صريحًا: أي بكسل NoData/NaN/±Inf بيوقف التشغيل فورًا قبل حساب الميل — ممنوع الاستيفاء أو الاستبدال.
+
 عشان تعيد توليد الملفات من الصفر بالترتيب:
 1. حساب الميل: `python analysis/compute_slope.py` → يطلع `web/data/slope_u8.bin`
 2. إسقاط الأهداف ونقاط المركبة: `python analysis/project_targets.py` → يحدّث `analysis/projected_points.json`
