@@ -1,8 +1,12 @@
 {
   "source": "NASA M20 First Weather Report",
+  "source_url": "https://mars.nasa.gov/resources/25641/perseverances-first-weather-report/",
   "type": "cited",
-  "points": [
-    { "label": "Day", "temp": -22 },
-    { "label": "Night", "temp": -83 }
+  "unit": "°C",
+  "data_kind": "extrema_only",
+  "note": "Day high and night low from Sols 43-44 (April 3-4, 2021).",
+  "curve": [
+    { "label": "Day High", "temp": -22 },
+    { "label": "Night Low", "temp": -83 }
   ]
 }

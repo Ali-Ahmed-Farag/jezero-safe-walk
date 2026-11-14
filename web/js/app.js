@@ -98,37 +98,30 @@ async function boot() {
     const mapBounds = [[0, 0], [state.meta.height, state.meta.width]];
     map.setView([state.meta.height / 2, state.meta.width / 2], 1);
 
-    // 1. Add CTX Basemap (Bottom Layer)
+    // Add CTX Basemap
     try {
       const ctxLayer = L.imageOverlay('./data/ctx_basemap.jpg', mapBounds, { opacity: 1.0, interactive: false }).addTo(map);
-      ctxLayer.on('load', () => {
-        document.getElementById('layer-ctx').disabled = false;
-        document.getElementById('layer-ctx').parentElement.style.opacity = 1;
-        document.getElementById('opacity-ctx').disabled = false;
-      });
-      ctxLayer.on('error', () => console.warn("CTX missing"));
-      
       document.getElementById('layer-ctx').addEventListener('change', (e) => e.target.checked ? ctxLayer.addTo(map) : map.removeLayer(ctxLayer));
       document.getElementById('opacity-ctx').addEventListener('input', (e) => ctxLayer.setOpacity(e.target.value / 100));
       ctxLayer.bringToBack();
     } catch(e) {}
 
-    // 2. Add Hillshade (Middle Layer)
+    // Add Hillshade
     try {
       const hsLayer = L.imageOverlay('./data/hillshade.png', mapBounds, { opacity: 0.6, interactive: false }).addTo(map);
-      hsLayer.on('load', () => {
-        document.getElementById('layer-hillshade').disabled = false;
-        document.getElementById('layer-hillshade').parentElement.style.opacity = 1;
-        document.getElementById('opacity-hillshade').disabled = false;
-      });
-      hsLayer.on('error', () => console.warn("Hillshade missing"));
-
       document.getElementById('layer-hillshade').addEventListener('change', (e) => e.target.checked ? hsLayer.addTo(map) : map.removeLayer(hsLayer));
       document.getElementById('opacity-hillshade').addEventListener('input', (e) => hsLayer.setOpacity(e.target.value / 100));
       hsLayer.bringToBack();
     } catch(e) {}
 
-    // 3. Add Slope Map (Top Raster Layer)
+    // Add Geologic Map (P2 Optional)
+    try {
+      const geoLayer = L.imageOverlay('./data/geologic_map.png', mapBounds, { opacity: 0.4, interactive: false });
+      document.getElementById('layer-geologic').addEventListener('change', (e) => e.target.checked ? geoLayer.addTo(map) : map.removeLayer(geoLayer));
+      document.getElementById('opacity-geologic').addEventListener('input', (e) => geoLayer.setOpacity(e.target.value / 100));
+      geoLayer.bringToBack();
+    } catch(e) {}
+
     updateSlopeOverlay(mapBounds);
 
     state.roverTrack = await loadJSON('./data/rover_track.geojson');
@@ -206,7 +199,7 @@ function updateSlopeOverlay(bounds) {
   const url = canvas.toDataURL("image/png");
   const currentOpacity = document.getElementById('opacity-slope') ? document.getElementById('opacity-slope').value / 100 : 0.7;
   slopeOverlay = L.imageOverlay(url, bounds, { opacity: currentOpacity, interactive: false }).addTo(map);
-  slopeOverlay.bringToFront(); // نخليها فوق الخرايط التانية
+  slopeOverlay.bringToFront();
   updateLegend();
 }
 
@@ -231,10 +224,10 @@ function setupLayerControls() {
 
 function updateThermalRec() {
   const recEl = document.getElementById('mb-thermal-rec');
-  if (state.thermal && state.thermal.points) {
-    const dayT = state.thermal.points.find(p => p.label === 'Day')?.temp || -22;
-    const nightT = state.thermal.points.find(p => p.label === 'Night')?.temp || -83;
-    recEl.innerHTML = `<strong>EVA Window:</strong> Suggested daytime EVA due to extreme cold at night (Day: ${dayT}°C, Night: ${nightT}°C). Preliminary recommendation only.`;
+  if (state.thermal && state.thermal.curve && state.thermal.data_kind === "extrema_only") {
+    const dayT = state.thermal.curve.find(p => p.label === 'Day High')?.temp || -22;
+    const nightT = state.thermal.curve.find(p => p.label === 'Night Low')?.temp || -83;
+    recEl.innerHTML = `<strong>EVA Window:</strong> Suggested daytime EVA (Day: ${dayT}${state.thermal.unit}, Night: ${nightT}${state.thermal.unit}). ${state.thermal.note}`;
   }
 }
 
@@ -339,7 +332,7 @@ window.addEventListener('resize', () => {
 async function setupThermal() {
   try {
     state.thermal = await loadJSON('./data/thermal.json');
-    document.getElementById('thermal-source').innerHTML = `<strong>Source:</strong> ${state.thermal.source} <br><em>Type: ${state.thermal.type.toUpperCase()} (Historical Archive)</em>`;
+    document.getElementById('thermal-source').innerHTML = `<strong>Source:</strong> ${state.thermal.source} <br><em>Type: ${state.thermal.type.toUpperCase()} (Archival)</em>`;
     document.getElementById('btn-thermal').addEventListener('click', () => {
       document.getElementById('thermal-modal').style.display = 'flex';
       setTimeout(() => drawThermalChart(state.thermal), 50); 
@@ -360,7 +353,7 @@ function drawThermalChart(data) {
   const width = parent.clientWidth, height = parent.clientHeight;
   ctx.clearRect(0, 0, width, height);
 
-  const points = data.points || [];
+  const points = data.curve || [];
   if (points.length === 0) return;
 
   const padding = { top: 40, right: 40, bottom: 40, left: 60 };
@@ -371,7 +364,11 @@ function drawThermalChart(data) {
   let maxTemp = Math.max(...points.map(c => c.temp));
   minTemp -= 10; maxTemp += 10;
 
-  const scaleX = (idx) => padding.left + (idx / (points.length - 1)) * w;
+  const scaleX = (idx) => {
+    if (points.length === 1) return padding.left + w / 2;
+    const spacing = w / (points.length - 1);
+    return padding.left + (idx * spacing);
+  };
   const scaleY = (temp) => padding.top + h - ((temp - minTemp) / (maxTemp - minTemp)) * h;
 
   points.forEach((pt, i) => {
@@ -389,9 +386,10 @@ function drawThermalChart(data) {
     ctx.fillStyle = '#E6EAF2';
     ctx.font = '12px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(`${pt.temp}°C`, x, y - 15);
+    ctx.fillText(`${pt.temp}${data.unit || '°C'}`, x, y - 15);
     
     ctx.fillStyle = '#8A93A8';
+    ctx.font = '11px sans-serif';
     ctx.fillText(pt.label, x, height - 15);
   });
 }

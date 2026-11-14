@@ -38,7 +38,6 @@
 
   <main class="layout">
     
-    <!-- Left Panel: Layers -->
     <aside class="panel panel-left">
       <div class="panel-header">Layers</div>
       <div class="panel-body" id="layer-controls">
@@ -54,6 +53,12 @@
           <label><input type="checkbox" id="layer-slope" checked> Slope Map</label>
           <input type="range" id="opacity-slope" min="0" max="100" value="70">
           <div id="slope-legend" class="legend"></div>
+        </div>
+        <div class="layer-item">
+          <label title="Warning: USGS map has a ~100-200m offset relative to CTX">
+            <input type="checkbox" id="layer-geologic"> Geologic Map (P2)
+          </label>
+          <input type="range" id="opacity-geologic" min="0" max="100" value="40">
         </div>
         <div class="layer-item">
           <label><input type="checkbox" id="layer-rover" checked> Perseverance Track</label>
@@ -75,13 +80,11 @@
       </div>
     </aside>
 
-    <!-- Center Map -->
     <div class="map-container">
       <div id="map"></div>
       <div class="map-hint" id="map-hint">Click to set Start</div>
     </div>
 
-    <!-- Right Panel: Mission Brief -->
     <aside class="panel panel-right">
       <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
         Mission Brief
@@ -96,7 +99,7 @@
           <div class="brief-item"><span class="label">Ascent</span><span class="value" id="mb-ascent">-</span></div>
           <div class="brief-item"><span class="label">Descent</span><span class="value" id="mb-descent">-</span></div>
         </div>
-        
+
         <div style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between; background: var(--surface-2); padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
           <label for="input-speed" style="font-size: 11px; color: var(--text-dim);">Walking Speed (km/h)</label>
           <input type="number" id="input-speed" value="2" min="0.5" max="5" step="0.5" style="width: 50px; background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 2px 4px; border-radius: 4px; text-align: center;">
@@ -107,7 +110,6 @@
       </div>
     </aside>
 
-    <!-- Bottom Panel -->
     <div class="panel panel-bottom">
       <div class="panel-header">Elevation & Slope Profile</div>
       <div class="panel-body" id="elevation-profile">
@@ -140,6 +142,7 @@
           <li><strong>Terrain Elevation (DEM 20m):</strong> USGS / NASA (M20 Jezero Crater CTXDEM)</li>
           <li><strong>Rover Path:</strong> NASA PDS (Perseverance PLACES dataset)</li>
           <li><strong>Slope & Routing:</strong> Computed via Horn 3x3 method from DEM</li>
+          <li><strong>Geologic Map:</strong> USGS-NASA Planetary Geologic Mapping (P2 Layer)</li>
           <li><strong>Science Targets:</strong> NASA Mars Trek</li>
           <li><strong>Thermal Data:</strong> Cited from NASA M20 First Weather Report (Archival)</li>
         </ul>
@@ -148,6 +151,7 @@
           <li><strong>Planning Tool Only:</strong> This is a preliminary EVA planning tool, not a real-time navigation system.</li>
           <li><strong>Suit Thresholds:</strong> The Safe/Hard/Forbidden slope thresholds are based on Perseverance rover data (99% under 16°). They are adjustable and not medically validated for humans.</li>
           <li><strong>Resolution:</strong> The 20m DEM does not show small rocks or hazards.</li>
+          <li><strong>Geologic Map Offset:</strong> The optional USGS geologic map layer has a documented positional offset of ~100-200m relative to the CTX basemap.</li>
           <li><strong>Walking Speed:</strong> Estimated time assumes a constant speed (default 2 km/h) on all terrain.</li>
         </ul>
       </div>

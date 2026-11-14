@@ -1,3 +1,4 @@
+/* Responsive Styles for Mobile and Tablets */
 @media (max-width: 1024px) {
   body {
     overflow-y: auto;
@@ -9,28 +10,78 @@
     flex-direction: column;
     height: auto;
     min-height: 100vh;
+    gap: 8px;
   }
 
+  /* Map takes top priority */
   .map-container {
-    height: 60vh;
-    min-height: 400px;
-    order: -1; /* Map comes first on mobile */
+    height: 55vh; /* Takes up roughly half the screen */
+    min-height: 350px;
+    order: -1; /* Ensures map is at the top */
+    border-radius: 0; 
   }
 
+  /* Panels stack below the map and become scrollable */
   .panel-left, .panel-right, .panel-bottom {
     height: auto;
-    max-height: 450px;
+    max-height: 450px; 
     overflow-y: auto;
+    border-radius: 0;
   }
 
   .panel-bottom {
-    height: 250px;
+    height: 250px; /* Fixed height for the profile chart */
+    min-height: 250px;
   }
   
+  /* Fix the Topbar for mobile */
   .topbar {
     flex-direction: column;
     height: auto;
-    gap: var(--space-3);
-    padding: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    gap: var(--space-2);
+    align-items: flex-start;
+  }
+  
+  .topbar-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .topbar-right {
+    width: 100%;
+    flex-wrap: wrap; /* Allow buttons to wrap if they don't fit in one line */
+    justify-content: flex-start;
+    gap: 6px;
+  }
+  
+  .btn {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+  
+  .brand-name {
+    font-size: 14px;
+  }
+  
+  /* Hide the long warning badge on mobile to save space */
+  .badge-warning {
+    display: none; 
+  }
+}
+
+/* Extra small screens (like iPhone SE) */
+@media (max-width: 480px) {
+  .topbar-right .btn {
+    flex: 1 1 auto; /* Make buttons stretch evenly */
+    text-align: center;
+  }
+  
+  .brand-mark {
+    font-size: 16px;
+  }
+  
+  .brand-name {
+    font-size: 13px;
   }
 }
