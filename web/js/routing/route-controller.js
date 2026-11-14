@@ -37,7 +37,10 @@ export function handleMapClick(map, e, state, ui, updateBriefCallback) {
   } else if (!state.end) {
     state.end = [row, col];
     endMarker = L.circleMarker(rowColToLeaflet(row, col), { radius: 7, color: '#fff', fillColor: '#F85149', fillOpacity: 1, weight: 2 }).addTo(map);
-    calculateAndDrawRoute(map, state, ui, updateBriefCallback, "safest");
+    const r = calculateAndDrawRoute(map, state, ui, updateBriefCallback, "safest");
+    // The Mission Brief callback must run for manual routes too (presets use the
+    // debounced wrapper which handles it; the direct call discards the result).
+    if (r && updateBriefCallback) updateBriefCallback(r.result, r.metrics);
   } else {
     clearRoute(map);
     state.start = null; state.end = null;

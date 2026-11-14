@@ -13,17 +13,19 @@ body {
   flex-direction: column;
   overflow: hidden;
   font-size: 13px;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Top Bar */
+/* ===== Top Bar ===== */
 .topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: var(--space-3);
   background-color: var(--surface);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-2) var(--space-4);
   border-bottom: 1px solid var(--border);
-  height: 56px;
+  min-height: 56px;
   flex-shrink: 0;
 }
 
@@ -31,36 +33,50 @@ body {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  flex-shrink: 0;
 }
 
 .brand-mark {
   color: var(--accent);
   font-size: 20px;
+  line-height: 1;
 }
 
 .brand-name {
-  font-weight: 600;
-  font-size: 16px;
-  letter-spacing: 0.5px;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.brand-sub {
+  font-size: 10px;
+  color: var(--text-faint);
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .badge-warning {
   font-size: 10px;
+  font-weight: 600;
   color: var(--accent);
-  background-color: rgba(255, 107, 61, 0.1);
-  border: 1px solid rgba(255, 107, 61, 0.3);
-  padding: 2px 8px;
+  background-color: var(--accent-dim);
+  border: 1px solid rgba(255, 107, 61, 0.35);
+  padding: 3px 10px;
   border-radius: 12px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
 }
 
 .topbar-right {
   display: flex;
+  align-items: center;
   gap: var(--space-2);
 }
 
-/* Main Layout Grid */
+/* ===== Main Layout Grid (desktop) ===== */
 .layout {
   display: grid;
   grid-template-columns: 280px 1fr 320px;
@@ -69,12 +85,12 @@ body {
     "left map right"
     "left bottom right";
   flex: 1;
-  gap: 1px; /* uses background color as border */
+  gap: 1px;
   background-color: var(--border);
   overflow: hidden;
 }
 
-/* Panels */
+/* ===== Panels ===== */
 .panel {
   background-color: var(--surface);
   display: flex;
@@ -90,7 +106,6 @@ body {
   grid-area: map;
   position: relative;
   background-color: var(--bg);
-  /* سطرين مهمين عشان الخريطة تاخد المساحة كلها */
   width: 100%;
   height: 100%;
 }
@@ -98,21 +113,29 @@ body {
 #map {
   width: 100%;
   height: 100%;
-  background-color: #000;
+  background-color: #05070C;
 }
 
 .panel-header {
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   color: var(--text-dim);
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border);
   background-color: var(--surface-2);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 .panel-body {
   padding: var(--space-4);
   flex: 1;
+}
+
+.panel-section + .panel-header {
+  border-top: 1px solid var(--border);
 }

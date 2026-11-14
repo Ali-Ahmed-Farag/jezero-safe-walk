@@ -1,87 +1,100 @@
-/* Responsive Styles for Mobile and Tablets */
-@media (max-width: 1024px) {
-  body {
-    overflow-y: auto;
-    height: auto;
-  }
-  
-  .layout {
-    display: flex;
-    flex-direction: column;
-    height: auto;
-    min-height: 100vh;
-    gap: 8px;
-  }
+/* ============================================================
+   Responsive — NOVA layout
+   Desktop (default) > laptop > tablet (stacked, map first,
+   Mission Brief right after) > mobile (compact hero, 44px targets,
+   safety pill always visible).
+   ============================================================ */
 
-  /* Map takes top priority */
-  .map-container {
-    height: 55vh; /* Takes up roughly half the screen */
-    min-height: 350px;
-    order: -1; /* Ensures map is at the top */
-    border-radius: 0; 
-  }
-
-  /* Panels stack below the map and become scrollable */
-  .panel-left, .panel-right, .panel-bottom {
-    height: auto;
-    max-height: 450px; 
-    overflow-y: auto;
-    border-radius: 0;
-  }
-
-  .panel-bottom {
-    height: 250px; /* Fixed height for the profile chart */
-    min-height: 250px;
-  }
-  
-  /* Fix the Topbar for mobile */
-  .topbar {
-    flex-direction: column;
-    height: auto;
-    padding: var(--space-2) var(--space-3);
-    gap: var(--space-2);
-    align-items: flex-start;
-  }
-  
-  .topbar-left {
-    width: 100%;
-    justify-content: space-between;
-  }
-  
-  .topbar-right {
-    width: 100%;
-    flex-wrap: wrap; /* Allow buttons to wrap if they don't fit in one line */
-    justify-content: flex-start;
-    gap: 6px;
-  }
-  
-  .btn {
-    font-size: 11px;
-    padding: 6px 10px;
-  }
-  
-  .brand-name {
-    font-size: 14px;
-  }
-  
-  /* Hide the long warning badge on mobile to save space */
-  .badge-warning {
-    display: none; 
+/* Touch pointers get 44px targets everywhere */
+@media (pointer: coarse) {
+  .nav-btn, .btn-hero, .tool-btn, .dropdown-menu button, .close-modal-btn,
+  .scenario-btn, .mode-btn, .suit-chip, .link-btn {
+    min-height: 44px;
   }
 }
 
-/* Extra small screens (like iPhone SE) */
+@media (max-width: 1280px) {
+  .row-top { grid-template-columns: minmax(280px, 340px) 1fr 190px; }
+  .hero-title { font-size: clamp(28px, 2.6vw, 42px); }
+  .layers-strip-body { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
+  .suit-sep { display: none; }
+}
+
+@media (max-width: 1024px) {
+  body { overflow-y: auto; }
+
+  .nova { padding: 4px var(--space-3) var(--space-4); gap: 10px; }
+
+  /* Stack: hero (compact) -> map -> Mission Brief -> cards -> layers */
+  .row-top {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .hero {
+    order: -3;
+    padding: var(--space-4);
+    gap: var(--space-3);
+  }
+  .hero-title { font-size: clamp(26px, 6vw, 38px); }
+  .hero-sub { max-width: none; }
+
+  .map-stage {
+    order: -2;
+    min-height: 52vh;
+    border-radius: var(--radius-lg);
+  }
+
+  .stats-rail { order: -1; border-radius: var(--radius-lg); }
+  .rail-stats { flex-direction: row; flex-wrap: wrap; gap: var(--space-4); padding-top: 4px; }
+
+  .row-cards { grid-template-columns: 1fr 1fr; }
+
+  .layers-strip-body { grid-template-columns: 1fr 1fr; }
+
+  /* Touch targets */
+  .nav-btn, .btn-hero, .tool-btn, .dropdown-menu button,
+  .scenario-btn, .mode-btn, .suit-chip { min-height: 44px; }
+
+  /* Topbar: brand+status row, actions row scrolls horizontally */
+  .topnav {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+  }
+  .nav-brand { order: 0; }
+  .nav-right { order: 1; margin-left: auto; }
+  .nav-links {
+    order: 2;
+    width: 100%;
+    margin-left: 0;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    scrollbar-width: thin;
+    padding: 4px;
+  }
+  .status-pill { font-size: 9.5px; padding: 7px 10px; }
+
+  .dropdown-menu { left: 50%; transform: translateX(-50%); }
+}
+
+@media (max-width: 640px) {
+  .row-cards { grid-template-columns: 1fr; }
+  .layers-strip-body { grid-template-columns: 1fr; }
+  .hero-title { font-size: clamp(30px, 9vw, 40px); }
+  .rail-num { font-size: 24px; }
+  .rail-stats { gap: var(--space-3); }
+}
+
 @media (max-width: 480px) {
-  .topbar-right .btn {
-    flex: 1 1 auto; /* Make buttons stretch evenly */
-    text-align: center;
-  }
-  
-  .brand-mark {
-    font-size: 16px;
-  }
-  
-  .brand-name {
-    font-size: 13px;
-  }
+  .brand-name { font-size: 13px; letter-spacing: 4px; }
+  .brand-sub { display: none; }
+  .status-pill { letter-spacing: 0.6px; }
+  .map-stage { min-height: 46vh; }
+  .modal { width: 96%; max-height: 88vh; }
+  .validation-grid { grid-template-columns: 1fr; }
+  .thermal-mini { flex-direction: column; }
+  .validation-mini { flex-direction: column; }
 }

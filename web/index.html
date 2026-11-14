@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:,">
   <title>Jezero Safe Walk — Mission Planner</title>
-  
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/layout.css">
@@ -17,112 +19,183 @@
 </head>
 <body>
 
-  <header class="topbar">
-    <div class="topbar-left">
+  <nav class="topnav">
+    <div class="nav-brand">
       <span class="brand-mark">◈</span>
-      <span class="brand-name">Jezero Safe Walk</span>
-      <span class="badge-warning">Preliminary planning — not for navigation</span>
+      <span class="brand-name">JEZERO</span>
+      <span class="brand-sub">SAFE WALK</span>
     </div>
-    <div class="topbar-right">
-      <button class="btn btn-ghost" id="btn-about">About</button>
-      <div style="position: relative;">
-        <button class="btn btn-ghost" id="btn-presets">Scenarios ▼</button>
-        <div id="presets-dropdown" class="dropdown-menu" style="display: none;"></div>
-      </div>
-      <button class="btn btn-ghost" id="btn-compare">Compare</button>
-      <button class="btn btn-ghost" id="btn-thermal">Thermal</button>
-      <button class="btn btn-ghost" id="btn-validation">Validation</button>
-      <button class="btn btn-accent" id="btn-sources">Sources & Limits</button>
+    <div class="nav-links glass">
+      <button class="nav-btn nav-active" id="btn-nav-map">Map</button>
+      <button class="nav-btn" id="btn-presets">Scenarios ▼</button>
+      <div id="presets-dropdown" class="dropdown-menu glass" style="display: none;"></div>
+      <button class="nav-btn" id="btn-compare">Compare</button>
+      <button class="nav-btn" id="btn-thermal">Thermal</button>
+      <button class="nav-btn" id="btn-validation">Validation</button>
+      <button class="nav-btn" id="btn-sources">Sources</button>
+      <button class="nav-btn" id="btn-about">About</button>
     </div>
-  </header>
+    <div class="nav-right">
+      <span class="status-pill" title="This is a preliminary planning tool, not a navigation system">
+        <span class="status-dot"></span> PLANNING · NOT FOR NAVIGATION
+      </span>
+    </div>
+  </nav>
 
-  <main class="layout">
-    
-    <aside class="panel panel-left">
-      <div class="panel-header">Layers</div>
-      <div class="panel-body" id="layer-controls">
+  <main class="nova">
+
+    <div class="row-top">
+      <section class="hero" id="hero">
+        <div class="hero-status glass-chip">
+          <span class="status-dot dot-green"></span> MISSION STATUS · <b>OPERATIONAL</b>
+        </div>
+        <h1 class="hero-title">
+          EXPLORE.<br>
+          ANALYZE.<br>
+          <span class="accent">TRAVERSE.</span>
+        </h1>
+        <p class="hero-sub">
+          Plan safe astronaut EVAs across Jezero Crater using real NASA terrain
+          data and routing validated against Perseverance telemetry.
+        </p>
+        <div class="hero-actions">
+          <button class="btn-hero btn-hero-primary" id="btn-scenarios-hero">SELECT SCENARIO ↗</button>
+          <button class="btn-hero btn-hero-ghost" id="btn-start-planning">START PLANNING ✛</button>
+        </div>
+        <div class="hero-print">
+          <button class="nav-btn" id="btn-print">Print Brief</button>
+        </div>
+      </section>
+
+      <section class="map-stage glass-frame" id="map-stage">
+        <div id="map"></div>
+        <div class="map-toolbar" id="map-toolbar">
+          <button class="tool-btn" id="btn-reset-route" title="Clear the current route and start over">⟲ Reset Route</button>
+          <button class="tool-btn" id="btn-center-landing" title="Center the map on the landing site">◎ Center on Landing</button>
+          <div class="mode-switch" role="group" aria-label="Route mode">
+            <button class="tool-btn mode-btn active" id="mode-safest" title="Weighted safety-optimized route">SAFEST</button>
+            <button class="tool-btn mode-btn" id="mode-shortest" title="Shortest route (forbidden terrain still blocked)">SHORTEST</button>
+          </div>
+        </div>
+        <div class="map-hint glass" id="map-hint">Click on the map to set Start</div>
+      </section>
+
+      <aside class="stats-rail glass" id="mission-brief">
+        <div class="rail-title">MISSION BRIEF</div>
+        <div class="rail-item">
+          <div class="rail-num mono" id="mb-dist">—</div>
+          <div class="rail-label">DISTANCE · KM</div>
+        </div>
+        <div class="rail-item">
+          <div class="rail-num mono" id="mb-time">—</div>
+          <div class="rail-label">EVA TIME · H</div>
+        </div>
+        <div class="rail-item">
+          <div class="rail-num mono" id="mb-max-slope">—</div>
+          <div class="rail-label">MAX SLOPE · °</div>
+        </div>
+        <div class="rail-item">
+          <div class="rail-num mono" id="mb-risk">—</div>
+          <div class="rail-label">RISK CLASS</div>
+        </div>
+        <div class="rail-item rail-duo">
+          <div>
+            <div class="rail-num mono sm" id="mb-ascent">—</div>
+            <div class="rail-label">ASCENT · M</div>
+          </div>
+          <div>
+            <div class="rail-num mono sm" id="mb-descent">—</div>
+            <div class="rail-label">DESCENT · M</div>
+          </div>
+        </div>
+        <div class="rail-divider"></div>
+        <div class="rail-item rail-line">
+          <div class="rail-label">SCENARIO</div>
+          <div class="rail-value" id="mb-scenario">—</div>
+        </div>
+        <div class="rail-item rail-line speed-row">
+          <label for="input-speed" class="rail-label">SPEED · KM/H</label>
+          <input type="number" id="input-speed" value="2" min="0.5" max="5" step="0.5">
+        </div>
+        <div id="mb-thermal-rec" class="rail-thermal"></div>
+        <div class="rail-stats">
+          <div class="rail-stat"><b>32,003</b><span>VALIDATION PTS</span></div>
+          <div class="rail-stat"><b>1016×1075</b><span>GRID @ 20 M</span></div>
+          <div class="rail-stat"><b>0–1815</b><span>SOLS COVERED</span></div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="row-cards">
+      <section class="card glass" id="card-scenarios">
+        <div class="card-head"><span>SCENARIOS</span><em>SIS GROUND DISTANCE</em></div>
+        <div class="scenario-list" id="scenario-list"></div>
+      </section>
+
+      <section class="card glass" id="card-profile">
+        <div class="card-head"><span>ELEVATION &amp; SLOPE PROFILE</span><em>ALONG ROUTE</em></div>
+        <div class="profile-wrap"><canvas id="profile-canvas"></canvas></div>
+      </section>
+
+      <section class="card glass" id="card-thermal">
+        <div class="card-head"><span>THERMAL ENVIRONMENT</span><em>CITED · ARCHIVAL</em></div>
+        <div class="thermal-mini" id="thermal-mini"></div>
+        <div class="card-foot">NASA M20 First Weather Report — Sols 43–44 · <button class="link-btn" id="btn-thermal-open">Open details</button></div>
+      </section>
+
+      <section class="card glass" id="card-validation">
+        <div class="card-head"><span>SCIENTIFIC VALIDATION</span><em>N = 32,003</em></div>
+        <div class="validation-mini">
+          <div class="mini-stat"><span class="mono" id="val-mini-pitch">0.886</span><label>PITCH r</label></div>
+          <div class="mini-stat"><span class="mono" id="val-mini-roll">0.861</span><label>ROLL r</label></div>
+          <div class="mini-stat"><span class="mono" id="val-mini-replay">73.8%</span><label>REPLAY ≤100 M</label></div>
+        </div>
+        <div class="card-foot">vs Perseverance telemetry (PDS PLACES) · <button class="link-btn" id="btn-validation-open">Open full report</button></div>
+      </section>
+    </div>
+
+    <section class="layers-strip glass" id="layer-controls">
+      <div class="layers-strip-title">TERRAIN LAYERS &amp; SUIT PROFILE</div>
+      <div class="layers-strip-body">
         <div class="layer-item">
           <label><input type="checkbox" id="layer-ctx" checked> CTX Basemap</label>
-          <input type="range" id="opacity-ctx" min="0" max="100" value="100">
+          <div class="opacity-row"><input type="range" id="opacity-ctx" min="0" max="100" value="100"><span class="opacity-value">100%</span></div>
         </div>
         <div class="layer-item">
           <label><input type="checkbox" id="layer-hillshade" checked> Hillshade</label>
-          <input type="range" id="opacity-hillshade" min="0" max="100" value="60">
+          <div class="opacity-row"><input type="range" id="opacity-hillshade" min="0" max="100" value="60"><span class="opacity-value">60%</span></div>
         </div>
         <div class="layer-item">
           <label><input type="checkbox" id="layer-slope" checked> Slope Map</label>
-          <input type="range" id="opacity-slope" min="0" max="100" value="70">
+          <div class="opacity-row"><input type="range" id="opacity-slope" min="0" max="100" value="70"><span class="opacity-value">70%</span></div>
           <div id="slope-legend" class="legend"></div>
         </div>
         <div class="layer-item">
-          <label title="Warning: USGS map has a ~100-200m offset relative to CTX">
-            <input type="checkbox" id="layer-geologic"> Geologic Map (P2)
-          </label>
-          <input type="range" id="opacity-geologic" min="0" max="100" value="40">
+          <label title="Warning: USGS map has a ~100-200m offset relative to CTX"><input type="checkbox" id="layer-geologic"> Geologic Map (P2)</label>
+          <div class="opacity-row"><input type="range" id="opacity-geologic" min="0" max="100" value="40"><span class="opacity-value">40%</span></div>
         </div>
         <div class="layer-item">
           <label><input type="checkbox" id="layer-rover" checked> Perseverance Track</label>
-          <input type="range" id="opacity-rover" min="0" max="100" value="100">
+          <div class="opacity-row"><input type="range" id="opacity-rover" min="0" max="100" value="100"><span class="opacity-value">100%</span></div>
         </div>
         <div class="layer-item">
           <label><input type="checkbox" id="layer-targets" checked> Science Targets</label>
-          <input type="range" id="opacity-targets" min="0" max="100" value="100">
+          <div class="opacity-row"><input type="range" id="opacity-targets" min="0" max="100" value="100"><span class="opacity-value">100%</span></div>
+        </div>
+        <div class="suit-sep"></div>
+        <div class="suit-inline" id="suit-profile-controls">
+          <label class="suit-chip"><input type="radio" name="suit" value="conservative"> Conservative ≤6°</label>
+          <label class="suit-chip"><input type="radio" name="suit" value="standard" checked> Standard ≤10°</label>
+          <label class="suit-chip"><input type="radio" name="suit" value="extended"> Extended ≤14°</label>
         </div>
       </div>
-
-      <div class="panel-header">Suit Profile</div>
-      <div class="panel-body" id="suit-profile-controls">
-        <div class="radio-group">
-          <label><input type="radio" name="suit" value="conservative"> Conservative (Safe ≤ 6°)</label>
-          <label><input type="radio" name="suit" value="standard" checked> Standard (Safe ≤ 10°)</label>
-          <label><input type="radio" name="suit" value="extended"> Extended (Safe ≤ 14°)</label>
-        </div>
-      </div>
-    </aside>
-
-    <div class="map-container">
-      <div id="map"></div>
-      <div class="map-hint" id="map-hint">Click to set Start</div>
-    </div>
-
-    <aside class="panel panel-right">
-      <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
-        Mission Brief
-        <button class="btn btn-ghost" id="btn-print" style="padding: 2px 6px; font-size: 10px;">Print</button>
-      </div>
-      <div class="panel-body" id="mission-brief">
-        <div class="brief-grid">
-          <div class="brief-item"><span class="label">Distance</span><span class="value" id="mb-dist">-</span></div>
-          <div class="brief-item"><span class="label">Time</span><span class="value" id="mb-time">-</span></div>
-          <div class="brief-item"><span class="label">Max Slope</span><span class="value" id="mb-max-slope">-</span></div>
-          <div class="brief-item"><span class="label">Risk</span><span class="value" id="mb-risk">-</span></div>
-          <div class="brief-item"><span class="label">Ascent</span><span class="value" id="mb-ascent">-</span></div>
-          <div class="brief-item"><span class="label">Descent</span><span class="value" id="mb-descent">-</span></div>
-        </div>
-
-        <div style="margin-top: 12px; display: flex; align-items: center; justify-content: space-between; background: var(--surface-2); padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
-          <label for="input-speed" style="font-size: 11px; color: var(--text-dim);">Walking Speed (km/h)</label>
-          <input type="number" id="input-speed" value="2" min="0.5" max="5" step="0.5" style="width: 50px; background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 2px 4px; border-radius: 4px; text-align: center;">
-        </div>
-        
-        <div id="mb-thermal-rec" style="font-size: 11px; color: var(--text-dim); margin-top: 12px; padding: 8px; border-left: 2px solid var(--hard); background: rgba(227, 179, 65, 0.1);">
-        </div>
-      </div>
-    </aside>
-
-    <div class="panel panel-bottom">
-      <div class="panel-header">Elevation & Slope Profile</div>
-      <div class="panel-body" id="elevation-profile">
-        <canvas id="profile-canvas"></canvas>
-      </div>
-    </div>
-
+    </section>
   </main>
 
   <!-- Modals -->
   <div class="modal-backdrop" id="about-modal" style="display: none;">
-    <div class="modal">
-      <div class="modal-header"><h2>About Jezero Safe Walk</h2><button class="btn btn-ghost close-modal-btn">✕</button></div>
+    <div class="modal glass">
+      <div class="modal-header"><h2>About Jezero Safe Walk</h2><button class="btn-ghost close-modal-btn">✕</button></div>
       <div class="modal-body">
         <h3>NASA Space Apps Cairo 2026</h3>
         <p><strong>Challenge:</strong> Interplanetary Survival Guide: Martian Map</p>
@@ -134,14 +207,14 @@
   </div>
 
   <div class="modal-backdrop" id="sources-modal" style="display: none;">
-    <div class="modal">
-      <div class="modal-header"><h2>Data Sources & Limitations</h2><button class="btn btn-ghost close-modal-btn">✕</button></div>
+    <div class="modal glass">
+      <div class="modal-header"><h2>Data Sources &amp; Limitations</h2><button class="btn-ghost close-modal-btn">✕</button></div>
       <div class="modal-body">
         <h3>Provenance (Data Sources)</h3>
         <ul>
           <li><strong>Terrain Elevation (DEM 20m):</strong> USGS / NASA (M20 Jezero Crater CTXDEM)</li>
           <li><strong>Rover Path:</strong> NASA PDS (Perseverance PLACES dataset)</li>
-          <li><strong>Slope & Routing:</strong> Computed via Horn 3x3 method from DEM</li>
+          <li><strong>Slope &amp; Routing:</strong> Computed via Horn 3x3 method from DEM</li>
           <li><strong>Geologic Map:</strong> USGS-NASA Planetary Geologic Mapping (P2 Layer)</li>
           <li><strong>Science Targets:</strong> NASA Mars Trek</li>
           <li><strong>Thermal Data:</strong> Cited from NASA M20 First Weather Report (Archival)</li>
@@ -159,11 +232,11 @@
   </div>
 
   <div class="modal-backdrop" id="validation-modal" style="display: none;">
-    <div class="modal" style="max-width: 900px;">
-      <div class="modal-header"><h2>Scientific Validation</h2><button class="btn btn-ghost close-modal-btn">✕</button></div>
+    <div class="modal glass" style="max-width: 900px;">
+      <div class="modal-header"><h2>Scientific Validation</h2><button class="btn-ghost close-modal-btn">✕</button></div>
       <div class="modal-body">
         <p>Our terrain slope calculations were validated against actual Perseverance rover pitch telemetry over <strong>32,003 points</strong>.</p>
-        <p style="color: var(--accent); font-size: 12px; margin-top: 10px; padding: 8px; border-left: 3px solid var(--accent); background: rgba(255,107,61,0.1);">
+        <p class="callout">
           <em>Disclaimer: The data pertains to the Perseverance rover, not human measurements. Validation results do not guarantee human route safety.</em>
         </p>
         <div class="validation-grid">
@@ -171,74 +244,61 @@
           <div class="val-card"><h4>Roll Correlation</h4><div class="val-value" id="val-roll-r">-</div><div class="val-sub">RMSE: <span id="val-roll-rmse">-</span>°</div></div>
           <div class="val-card"><h4>Elevation Bias</h4><div class="val-value" id="val-elev-bias">-</div><div class="val-sub">m (DEM vs Rover)</div></div>
         </div>
+        <p id="val-interpretation" class="dim-note" style="margin-top: 10px;"></p>
         <h3>Pitch Scatter Plot (Sample)</h3>
         <div class="val-chart-container"><canvas id="val-scatter-canvas"></canvas></div>
-        
+
         <h3>Rover Replay Benchmark</h3>
-        <p style="font-size: 12px; color: var(--text-dim); margin-bottom: 10px;">
+        <p class="dim-note">
           We simulated an EVA over a ~4km segment of the actual Perseverance traverse (Sols 537-719) to compare our routing algorithm against the rover's real path.
         </p>
-        <table class="compare-table">
+        <table class="compare-table" id="replay-table">
           <thead>
-            <tr>
-              <th>Metric</th>
-              <th style="color: var(--text-dim)">Actual Rover</th>
-              <th style="color: var(--safe)">Safest A* (Ours)</th>
-              <th style="color: var(--text-dim)">Shortest Path</th>
-            </tr>
+            <tr><th>Route</th><th>Distance</th><th>Mean Slope</th><th>Max Slope</th><th>≤100 m from rover</th></tr>
           </thead>
           <tbody>
-            <tr><td>Distance (m)</td><td id="rr-actual-dist">-</td><td id="rr-safest-dist">-</td><td id="rr-shortest-dist">-</td></tr>
-            <tr><td>Mean Slope (°)</td><td id="rr-actual-mean">-</td><td id="rr-safest-mean">-</td><td id="rr-shortest-mean">-</td></tr>
-            <tr><td>Max Slope (°)</td><td id="rr-actual-max">-</td><td id="rr-safest-max">-</td><td id="rr-shortest-max">-</td></tr>
-            <tr><td>Within 100m of Rover</td><td>100%</td><td id="rr-safest-pct">-</td><td id="rr-shortest-pct">-</td></tr>
+            <tr><td>Actual traverse</td><td><span id="rr-actual-dist">-</span> m</td><td><span id="rr-actual-mean">-</span>°</td><td><span id="rr-actual-max">-</span>°</td><td>—</td></tr>
+            <tr><td>Safest (A*)</td><td><span id="rr-safest-dist">-</span> m</td><td><span id="rr-safest-mean">-</span>°</td><td><span id="rr-safest-max">-</span>°</td><td><span id="rr-safest-pct">-</span></td></tr>
+            <tr><td>Baseline shortest</td><td><span id="rr-shortest-dist">-</span> m</td><td><span id="rr-shortest-mean">-</span>°</td><td><span id="rr-shortest-max">-</span>°</td><td><span id="rr-shortest-pct">-</span></td></tr>
           </tbody>
         </table>
-        <p style="font-size: 12px; color: var(--safe); margin-top: 10px; font-weight: bold;">
-          Key Takeaway: Safest A* reduces peak terrain slope exposure by ~38.9% (16.13° → 9.86°) with only a +6.6% distance overhead (+93.7 m) compared to the shortest baseline.
-        </p>
-
-        <h3>Slope Bins Analysis</h3>
+        <h3>Slope Bins — DEM vs Rover Tilt</h3>
         <table class="val-table">
-          <thead><tr><th>Slope Bin</th><th>Count</th><th>DEM Slope</th><th>Rover Pitch</th><th>Rover Roll</th></tr></thead>
+          <thead><tr><th>DEM slope bin</th><th>Points</th><th>Mean DEM slope</th><th>Mean |pitch|</th><th>Mean |roll|</th></tr></thead>
           <tbody id="val-bins-body"></tbody>
         </table>
-        <h3>Interpretation</h3>
-        <p id="val-interpretation" style="font-size: 12px; color: var(--text-dim); margin-top: 10px;"></p>
       </div>
     </div>
   </div>
 
   <div class="modal-backdrop" id="compare-modal" style="display: none;">
-    <div class="modal">
-      <div class="modal-header"><h2>Route Comparison</h2><button class="btn btn-ghost close-modal-btn">✕</button></div>
-      <div class="modal-body" id="compare-body">
-        <p style="margin-bottom: 16px;">Comparing the safest route against the shortest possible route (avoiding forbidden zones).</p>
+    <div class="modal glass">
+      <div class="modal-header"><h2>Safest vs Shortest</h2><button class="btn-ghost close-modal-btn">✕</button></div>
+      <div class="modal-body">
+        <p class="dim-note">Both routes avoid forbidden terrain. They coincide when the terrain between the endpoints is gentle.</p>
         <table class="compare-table">
-          <thead><tr><th>Metric</th><th style="color: var(--safe)">Safest</th><th style="color: var(--text-dim)">Shortest</th></tr></thead>
+          <thead><tr><th></th><th>Safest</th><th>Shortest</th></tr></thead>
           <tbody>
-            <tr><td>Distance (km)</td><td id="comp-safest-dist">-</td><td id="comp-shortest-dist">-</td></tr>
-            <tr><td>Time (h)</td><td id="comp-safest-time">-</td><td id="comp-shortest-time">-</td></tr>
-            <tr><td>Max Slope (°)</td><td id="comp-safest-slope">-</td><td id="comp-shortest-slope">-</td></tr>
-            <tr><td>Ascent (m)</td><td id="comp-safest-ascent">-</td><td id="comp-shortest-ascent">-</td></tr>
+            <tr><th>Distance (km)</th><td id="comp-safest-dist">-</td><td id="comp-shortest-dist">-</td></tr>
+            <tr><th>Time (h)</th><td id="comp-safest-time">-</td><td id="comp-shortest-time">-</td></tr>
+            <tr><th>Max slope (°)</th><td id="comp-safest-slope">-</td><td id="comp-shortest-slope">-</td></tr>
+            <tr><th>Ascent (m)</th><td id="comp-safest-ascent">-</td><td id="comp-shortest-ascent">-</td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- Updated Thermal Modal -->
   <div class="modal-backdrop" id="thermal-modal" style="display: none;">
-    <div class="modal">
-      <div class="modal-header"><h2>Thermal Window (Daily)</h2><button class="btn btn-ghost close-modal-btn">✕</button></div>
+    <div class="modal glass">
+      <div class="modal-header"><h2>Thermal Environment</h2><button class="btn-ghost close-modal-btn">✕</button></div>
       <div class="modal-body">
-        <p id="thermal-source" style="margin-bottom: 20px; font-size: 13px; color: var(--text-dim);"></p>
-        <div id="thermal-cards-container" style="display: flex; justify-content: space-around; gap: 16px; margin-top: 20px;"></div>
+        <div id="thermal-source"></div>
+        <div id="thermal-cards-container" class="thermal-mini" style="margin-top: 14px;"></div>
       </div>
     </div>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
