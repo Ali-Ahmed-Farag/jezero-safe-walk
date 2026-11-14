@@ -227,12 +227,13 @@
     </div>
   </div>
 
+  <!-- Updated Thermal Modal -->
   <div class="modal-backdrop" id="thermal-modal" style="display: none;">
     <div class="modal">
       <div class="modal-header"><h2>Thermal Window (Daily)</h2><button class="btn btn-ghost close-modal-btn">✕</button></div>
       <div class="modal-body">
-        <p id="thermal-source" style="margin-bottom: 16px; font-size: 13px;"></p>
-        <div class="chart-container"><canvas id="thermal-canvas"></canvas></div>
+        <p id="thermal-source" style="margin-bottom: 20px; font-size: 13px; color: var(--text-dim);"></p>
+        <div id="thermal-cards-container" style="display: flex; justify-content: space-around; gap: 16px; margin-top: 20px;"></div>
       </div>
     </div>
   </div>

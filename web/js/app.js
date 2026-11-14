@@ -324,7 +324,6 @@ window.addEventListener('resize', () => {
   setTimeout(() => {
     map.invalidateSize();
     if (currentMetrics && currentMetrics.arrays) drawProfile('profile-canvas', currentMetrics.arrays);
-    if (state.thermal && document.getElementById('thermal-modal').style.display === 'flex') drawThermalChart(state.thermal);
     if (document.getElementById('validation-modal').style.display === 'flex' && state.validationSample) drawValidationScatter('val-scatter-canvas', state.validationSample);
   }, 200);
 });
@@ -332,66 +331,37 @@ window.addEventListener('resize', () => {
 async function setupThermal() {
   try {
     state.thermal = await loadJSON('./data/thermal.json');
-    document.getElementById('thermal-source').innerHTML = `<strong>Source:</strong> ${state.thermal.source} <br><em>Type: ${state.thermal.type.toUpperCase()} (Archival)</em>`;
+    
+    document.getElementById('thermal-source').innerHTML = `
+      <strong>Source:</strong> ${state.thermal.source} <br>
+      <em>Type: ${state.thermal.type.toUpperCase()} (Archival)</em><br>
+      <small>Period: ${state.thermal.note || 'N/A'}</small>
+    `;
+
+    const container = document.getElementById('thermal-cards-container');
+    if (container) {
+      container.innerHTML = ''; 
+      if (state.thermal.data_kind === 'extrema_only' && state.thermal.curve) {
+        state.thermal.curve.forEach(pt => {
+          const card = document.createElement('div');
+          card.style.cssText = "background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; flex: 1;";
+          card.innerHTML = `
+            <div style="font-size: 12px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 8px;">${pt.label}</div>
+            <div style="font-size: 24px; font-weight: bold; color: var(--accent);">${pt.temp}${state.thermal.unit}</div>
+          `;
+          container.appendChild(card);
+        });
+      }
+    }
+
     document.getElementById('btn-thermal').addEventListener('click', () => {
       document.getElementById('thermal-modal').style.display = 'flex';
-      setTimeout(() => drawThermalChart(state.thermal), 50); 
     });
+    
     updateThermalRec();
-  } catch (err) {}
-}
-
-function drawThermalChart(data) {
-  const canvas = document.getElementById('thermal-canvas');
-  if (!canvas) return;
-  const parent = canvas.parentElement;
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = parent.clientWidth * dpr;
-  canvas.height = parent.clientHeight * dpr;
-  const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-  const width = parent.clientWidth, height = parent.clientHeight;
-  ctx.clearRect(0, 0, width, height);
-
-  const points = data.curve || [];
-  if (points.length === 0) return;
-
-  const padding = { top: 40, right: 40, bottom: 40, left: 60 };
-  const w = width - padding.left - padding.right;
-  const h = height - padding.top - padding.bottom;
-
-  let minTemp = Math.min(...points.map(c => c.temp));
-  let maxTemp = Math.max(...points.map(c => c.temp));
-  minTemp -= 10; maxTemp += 10;
-
-  const scaleX = (idx) => {
-    if (points.length === 1) return padding.left + w / 2;
-    const spacing = w / (points.length - 1);
-    return padding.left + (idx * spacing);
-  };
-  const scaleY = (temp) => padding.top + h - ((temp - minTemp) / (maxTemp - minTemp)) * h;
-
-  points.forEach((pt, i) => {
-    const x = scaleX(i);
-    const y = scaleY(pt.temp);
-    
-    ctx.beginPath();
-    ctx.arc(x, y, 6, 0, Math.PI * 2);
-    ctx.fillStyle = '#FF6B3D';
-    ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.fillStyle = '#E6EAF2';
-    ctx.font = '12px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${pt.temp}${data.unit || '°C'}`, x, y - 15);
-    
-    ctx.fillStyle = '#8A93A8';
-    ctx.font = '11px sans-serif';
-    ctx.fillText(pt.label, x, height - 15);
-  });
+  } catch (err) {
+    console.warn("Thermal data not loaded", err);
+  }
 }
 
 async function setupValidation() {
@@ -399,7 +369,6 @@ async function setupValidation() {
     const valData = await loadJSON('./data/validation_results.json');
     const m = valData.metrics;
     
-    // Fill basic metrics
     document.getElementById('val-pitch-r').textContent = m.pitch.correlation_r.toFixed(3);
     document.getElementById('val-pitch-rmse').textContent = m.pitch.rmse_deg.toFixed(2);
     document.getElementById('val-roll-r').textContent = m.roll.correlation_r.toFixed(3);
@@ -407,7 +376,6 @@ async function setupValidation() {
     document.getElementById('val-elev-bias').textContent = m.elevation.mean_bias_m.toFixed(2);
     document.getElementById('val-interpretation').textContent = valData.summary.scientific_interpretation;
 
-    // Fill Rover Replay Data
     const rr = valData.rover_replay;
     if (rr) {
       document.getElementById('rr-actual-dist').textContent = rr.actual_rover_distance_m.toFixed(1);
@@ -425,10 +393,9 @@ async function setupValidation() {
       document.getElementById('rr-shortest-pct').textContent = rr.baseline_shortest.pct_within_100m.toFixed(1) + '%';
     }
 
-    // Fill Bins Table
     const tbody = document.getElementById('val-bins-body');
     if (valData.slope_bins && tbody) {
-      tbody.innerHTML = ''; // Clear existing
+      tbody.innerHTML = '';
       valData.slope_bins.forEach(b => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -442,7 +409,7 @@ async function setupValidation() {
       });
     }
 
-    if (valData.samples) state.validationSample = valData.samples; // Updated to 'samples' based on file output
+    if (valData.samples) state.validationSample = valData.samples;
 
     document.getElementById('btn-validation').addEventListener('click', () => {
       document.getElementById('validation-modal').style.display = 'flex';
