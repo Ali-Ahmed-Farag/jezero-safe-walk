@@ -16,7 +16,7 @@ function pathMetrics({path, slope, elev, width, pixelM, profile, speedKmh = 2}) 
         const [r, c] = path[i];
         const idx = r * width + c;
         const s = slope[idx] / 4.0;
-        const e = elev ? elev[idx] / 10.0 : 0;
+        const e = (elev && elev[idx] !== -32768) ? elev[idx] / 10.0 : null;
         
         slope_arr.push(s);
         elev_arr.push(e);
@@ -79,4 +79,4 @@ function pathMetrics({path, slope, elev, width, pixelM, profile, speedKmh = 2}) 
         }
     };
 }
-if (typeof module !== 'undefined') module.exports = { pathMetrics };
+export { pathMetrics };

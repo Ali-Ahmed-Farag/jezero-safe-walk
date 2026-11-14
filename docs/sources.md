@@ -14,7 +14,7 @@ Status conventions (Task 09): acquisition dates are UTC-derived (acquisition sid
 | NASA Mars Trek WMTS service | Streaming service used for VERIFICATION/FALLBACK of the CTX orthomosaic above; service metadata inspected, no tiles downloaded | https://trek.nasa.gov/tiles/Mars/EQ/JEZ_ctx_B_soc_008_orthoMosaic_6m_Eqc_latTs0_lon0/1.0.0/WMTSCapabilities.xml | n/a (no tiles downloaded) | 2026-11-13 (metadata access) | NASA content; imagery credit "Courtesy NASA/JPL-Caltech" (JPL image use policy, verified 2026-11-13) | Task 06 verification/fallback |
 | Software libraries (DE1) | rasterio==1.4.4; numpy==2.4.6; pillow==13.0.0; fiona==1.10.1 (pinned in requirements.txt). rasterio bundles GDAL 3.10.3; fiona bundles its own GDAL 3.9.1 (no system GDAL needed) | PyPI project pages (https://pypi.org/project/rasterio/, https://pypi.org/project/numpy/, https://pypi.org/project/pillow/, https://pypi.org/project/fiona/) | n/a (pip-installed) | installed with the project environment 2026-11-13 (fiona: 2026-11-14) | License terms TO BE VERIFIED before submission (per PLAN's sources.md convention). Installed-version licenses verified 2026-11-14 (B12 audit, .venv dist-info): rasterio BSD; fiona BSD-3-Clause; numpy BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0; pillow MIT-CMU — all permissive | All DE1 processing and validation scripts |
 | Software libraries (DS track, as recorded by DS) | scipy 1.14.1 (BSD-3-Clause); matplotlib 3.10.1 (PSF/BSD); pandas 2.2.3 (BSD-3-Clause) — matplotlib used by analysis/generate_extras.py charts | DS track sources register (merged from DS docs/sources.md at integration, 2026-11-14); PyPI project pages | n/a | DS environment | Permissive (BSD/PSF) — attribution per license terms | DS analysis scripts and charts |
-| Frontend libraries (FS track, as recorded by DS/FS) | Leaflet 1.9.x (BSD-2-Clause); Chart.js 4.x (MIT) | DS track sources register; Leaflet/Chart.js official pages | n/a | bundled with the web app | Permissive (BSD-2/MIT) — attribution per license terms | web UI (map + charts) |
+| Frontend libraries (FS track, as recorded by DS/FS) | Leaflet 1.9.4 (BSD-2-Clause); Chart.js 4.x (MIT); Inter font via Google Fonts (SIL Open Font License 1.1) — Inter entry added from FS's register at integration | DS/FS track sources registers (merged at integration, 2026-11-14); Leaflet/Chart.js/Google-Fonts official pages | n/a | bundled with the web app | Permissive (BSD-2/MIT/OFL-1.1) — attribution per license terms | web UI (map + charts + typography) |
 
 ## 2. Datasets provided by other tracks - provenance as supplied by DE2
 
@@ -86,6 +86,11 @@ DE1's acquisition, processing, and validator scripts (pipeline/acquire_*.py, pip
 ### DS AI disclosure (preserved verbatim from DS's sources register at integration, 2026-11-14)
 
 تم استخدام نماذج الذكاء الاصطناعي (Gemini و Claude و DeepSeek) كمساعدين في كتابة الأكواد (JavaScript و Python)، وتصحيح الأخطاء (Debugging)، وتوثيق المنهجية، واقتراح تحسينات على خوارزمية A*. لم يتم استخدامها لتوليد أي أرقام أو نتائج علمية، وكل الأرقام المذكورة في التقرير تم استخراجها من تشغيل الكود على بيانات حقيقية بواسطة أعضاء الفريق.
+
+### FS AI disclosure (preserved verbatim from FS's sources register at integration, 2026-11-14)
+
+- **Code Generation:** The frontend (HTML, CSS, JavaScript) was developed with the assistance of AI tools (DeepSeek and Claude) to accelerate UI development, implement the Canvas charting logic, and integrate the A* algorithm.
+- **Data Science & Engineering:** The core algorithms (`astar.js`, `metrics.js`), data processing (DEM cropping, slope calculation), and validation metrics were developed by the team's Data Scientist and Data Engineers. AI was used for documentation review and formatting.
 
 
 ## Area of interest
