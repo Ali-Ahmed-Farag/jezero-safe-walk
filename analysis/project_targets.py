@@ -1,4 +1,4 @@
-import os
+﻿import os
 import json
 import csv
 import rasterio
@@ -22,7 +22,7 @@ def extract_mars_geo_crs(proj_crs: CRS) -> CRS:
 
 def main():
     dem_path = os.path.join("data", "processed", "dem_20m_crop.tif")
-    targets_path = "science_targets.geojson"
+    targets_path = os.path.join("web", "data", "science_targets.geojson")
     track_path = "data/processed/rover_track_clean.csv"
     out_path = os.path.join("analysis", "projected_points.json")
 
