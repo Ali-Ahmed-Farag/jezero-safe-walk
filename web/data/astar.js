@@ -131,7 +131,7 @@ function findRoute({
 
     const dirs = [
         [-1, 0, 1], [1, 0, 1], [0, -1, 1], [0, 1, 1],
-        [-1, -1, 1.4142], [-1, 1, 1.4142], [1, -1, 1.4142], [1, 1, 1.4142]
+        [-1, -1, Math.SQRT2], [-1, 1, Math.SQRT2], [1, -1, Math.SQRT2], [1, 1, Math.SQRT2]
     ];
 
     let expansions = 0;

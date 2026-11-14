@@ -174,8 +174,24 @@ async function setupPresets() {
           if (layer instanceof L.Polyline) map.removeLayer(layer);
           if (layer instanceof L.CircleMarker) map.removeLayer(layer);
         });
-        state.start = [Math.round(startRC.row), Math.round(startRC.col)];
-        state.end = [Math.round(endRC.row), Math.round(endRC.col)];
+        // B9 (F1): canonical grid mapping per grid_meta.notes — floor-based over the
+        // half-open domain [lon_min, lon_max) x (lat_min, lat_max], range-checked.
+        // (Math.round could shift an exact endpoint by up to one ~20 m pixel and
+        // produced route lengths inconsistent with the DS matrix, e.g. scenario_5.)
+        const canonicalRC = (rc) => {
+          const row = Math.floor(rc.row), col = Math.floor(rc.col);
+          if (!Number.isInteger(row) || !Number.isInteger(col) ||
+              row < 0 || row >= state.meta.height || col < 0 || col >= state.meta.width) {
+            return null;
+          }
+          return [row, col];
+        };
+        state.start = canonicalRC(startRC);
+        state.end = canonicalRC(endRC);
+        if (!state.start || !state.end) {
+          ui.hint.textContent = "Preset endpoint outside the grid.";
+          return;
+        }
         L.circleMarker([state.start[0], state.start[1]], { radius: 7, color: '#fff', fillColor: '#3FB950', fillOpacity: 1, weight: 2 }).addTo(map);
         L.circleMarker([state.end[0], state.end[1]], { radius: 7, color: '#fff', fillColor: '#F85149', fillOpacity: 1, weight: 2 }).addTo(map);
         debouncedCalculateRoute(map, state, ui, updateMissionBrief, "safest");
